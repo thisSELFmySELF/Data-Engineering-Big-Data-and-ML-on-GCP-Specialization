@@ -1,0 +1,670 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Streaming Data Processing: Streaming Analytics and Dashboards | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-730738e6a42cf2d08765342db72a96e1c168e026.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-5bdf08e3db82244d1fd919ef04497683c2eb8f48.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-5be9380d7cac08f7e2dac9c53445a154bd807c47.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="5NoAuag9Me0YC9rQiqAGLbjhIWdqoCQsu/AfJxFoD1axiJvcI10N4K41zfzE/fz7oVG9YXzMKT7Rt/jLDS6bsA==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;search_updates&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;program_announcements&quot;,&quot;canonical_domain_redirect&quot;,&quot;program_learning_assignment&quot;,&quot;barker&quot;,&quot;used_in&quot;,&quot;course_upgrade&quot;,&quot;community_forum&quot;,&quot;peer_assignment&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;teams&quot;,&quot;content_provider_admin&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='Streaming Data Processing3: Streaming Analytics and Dashboards' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Streaming Data Processing: Streaming Analytics and Dashboards | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='Streaming Data Processing3: Streaming Analytics and Dashboards' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32528958?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32528958?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-29602dc272dc25b87d80aad082aeac190a74d2ab.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="b22286b98ccba018" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Streaming Data Processing: Streaming Analytics and Dashboards</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32528958?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32528958?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32528958?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32528958?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32528958?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32528958?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32528958?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32528958?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32528958?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32528958?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32528958?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32528958?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32528958?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32528958?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32528958?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32528958?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32528958?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32528958?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32528958?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/10
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Creating a data source
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Creating a data source' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Create a chart using a custom query
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Create a chart using a custom query' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Streaming Data Processing: Streaming Analytics and Dashboards&quot;,&quot;lab_name&quot;:&quot;Streaming Data Processing: Streaming Analytics and Dashboards&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32528958' data-lab-billing-limit='0.0' data-lab-duration='7200' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:7200}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Streaming Data Processing: Streaming Analytics and Dashboards
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>2 hours</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32528958/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.2354'></div>
+
+</a><ql-button aria-label='Rate Lab' id='rate-lab-btn' label='Rate Lab' text></ql-button>
+</div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>Data visualization tools can help you make sense of your BigQuery data and help you analyze the data interactively. You can use visualization tools to help you identify trends, respond to them, and make predictions using your data. In this lab, you use Looker Studio to visualize data in the BigQuery table populated by your Dataflow pipeline in the previous exercise.  You <strong>will not be accessing live streaming data</strong> in this lab.</p>
+<h3>Objectives</h3>
+<p>In this lab, you will perform the following tasks:</p>
+<ul>
+<li>Connect to a BigQuery data source</li>
+<li>Create reports and charts to visualize BigQuery data</li>
+</ul>
+<p>This lab uses Looker Studio to visualize data in BigQuery using the BigQuery connector. In subsequent tasks, you will create a data source, a report, and charts that visualize data in the sample table.</p>
+<h2 id="step2">Setup</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+<h2 id="step3">Task 1. Creating a data source in Looker Studio</h2>
+<ol>
+<li>The Looker Studio User Interface is accessed from outside of the Google Cloud environment. Open a new browser tab preferably in an incognito window.  Navigate to: datastudio.google.com  or click on the following link:  <a href="https://lookerstudio.google.com/" target="_blank">Looker Studio</a>
+</li>
+</ol>
+<ql-infobox><strong>Note: </strong>The first step in creating a report in Looker Studio is to create a data source for the report. A report may contain one or more data sources. When you create a BigQuery data source, Looker Studio uses the BigQuery connector.</ql-infobox>
+<ql-infobox><strong>Note: </strong>You must have the appropriate permissions in order to add a BigQuery data source to a Looker Studio report.  Lab initialization steps created a BigQuery Dataset and tables for use in your exercises.  The permissions applied to BigQuery datasets will apply to the reports, charts, and dashboards you create in Looker Studio.  When a Looker Studio report is shared, the report components are visible only to users who have appropriate permissions at the data level.</ql-infobox>
+<ol start="2">
+<li>On the <strong>Reports</strong> page, in the <strong>Start with a Template</strong> section, click the <strong>Blank Report</strong> template. This starts the account setup process.</li>
+</ol>
+<p><img alt="Blank Report template tile highlighted" src="https://cdn.qwiklabs.com/5dfCR2lQlhKXC0PE0GiLg3jvf%2Fr%2BZQJ84dXfeBJ4n4I%3D"></p>
+<ol start="3">
+<li>
+<p>Acknowledge the terms of services and click <strong>Continue</strong>.</p>
+</li>
+<li>
+<p>On the <strong>Preferences</strong> page, select <strong>No</strong> for each option to receive email notifications, and click <strong>Continue</strong>.</p>
+</li>
+<li>
+<p>Now that the account is initialized, you need to start the process again.</p>
+</li>
+<li>
+<p>On the <strong>Reports</strong> page, in the <strong>Start with a Template</strong> section, click the <strong>Blank Report</strong> template. This time it will take you to a new page and begin an <strong>Untitled Report</strong>.</p>
+</li>
+<li>
+<p>The <strong>Add data to report</strong> panel will load from the bottom of the page.</p>
+</li>
+<li>
+<p>In the <strong>Google Connectors</strong> section, select <strong>BigQuery</strong>.</p>
+</li>
+</ol>
+<p><img alt="BigQuery option highlighted" src="https://cdn.qwiklabs.com/1%2BhBzCA%2FLoUP0Y0e4Z91QOA5lnV7z5plZOjTHuGEuIM%3D"></p>
+<ol start="9">
+<li>Authorize that "Looker Studio requires authorization to connect to your BigQuery projects."</li>
+<li>If prompted, in the <strong>Sign in</strong> dialog, select your student account.</li>
+<li>If prompted, click <strong>Allow</strong> to give Looker Studio permission to view the BigQuery resources in your lab account.</li>
+<li>Select <strong>My Projects</strong>.</li>
+<li>In the <strong>Project</strong> column, click your project name.</li>
+<li>In the <strong>Dataset</strong> column, click <strong>demos</strong>.</li>
+<li>In the <strong>Table</strong> column, click <strong>current_conditions</strong>.</li>
+<li>Lastly click <strong>Add</strong>.</li>
+</ol>
+<p>You will be prompted with a <strong>You are about to add data to this report</strong> notice.</p>
+<ol start="17">
+<li>
+<p>Check <strong>Don't show me this again</strong> and click <strong>Add to report</strong>.</p>
+</li>
+<li>
+<p>Once complete, a simple default tabular report appears.  This confirms that you can see your BigQuery data in Looker Studio.</p>
+</li>
+</ol>
+<p><img alt="Untitled Report" src="https://cdn.qwiklabs.com/p3LRpu98vhtIa4Jqz7wHJ7C38VitWgKaU9g%2Fs%2BXH4KE%3D"></p>
+<ql-infobox><strong>Note: </strong>Giving Looker Studio permission to Google Cloud account resources is typically a first-time activity and not something you would need to do every time you create a report.</ql-infobox>
+<p>Click <em>Check my progress</em> to verify the objective.</p>
+<ql-activity-tracking step="1">
+      Creating a data source
+  </ql-activity-tracking>
+<h2 id="step4">Task 2. Creating a bar chart using a calculated field</h2>
+<p>Once you have added the <strong>current_conditions</strong> data source to the report, the next step is to create a visualization. Begin by creating a bar chart. The bar chart will display the total number of vehicles captured for each highway.</p>
+<ol>
+<li>(Optional) At the top of the page, click <strong>Untitled Report</strong> to change the report name. For example, type <strong>&lt;PROJECTID&gt;-report1-yourname</strong>.</li>
+<li>Delete the pre-populated tabular report.  You can do this by simply selecting it and pressing delete.</li>
+<li>Next, from the <strong>Add a chart</strong> menu select the first <strong>Bar chart</strong>.</li>
+</ol>
+<p><img alt=" Add a chart menu. Bar chart option highlighted" src="https://cdn.qwiklabs.com/kKAmgWqP6s5%2BOZARFYp19%2Bm5OGzNnsnmxU1EsQcrRLk%3D"></p>
+<ol start="4">
+<li>In the <strong>Bar chart</strong> properties window, on the <strong>Setup</strong> tab, notice the value for <strong>Data Source</strong> (<strong>current_conditions</strong>) and the default values for <strong>Dimension</strong> and <strong>Metric</strong>.</li>
+<li>If <strong>Dimension</strong> is not set to <strong>highway</strong>, then change <strong>Dimension</strong> to <strong>highway</strong>. In the <strong>Dimension</strong> section, click the existing dimension and in the <strong>Dimension picker</strong>, select <strong>highway</strong>.</li>
+<li>In the <strong>Metric</strong> section, click <strong>Add metric</strong> and add <strong>latitude</strong>.</li>
+<li>In the <strong>Metric</strong> section, mouse over <strong>Record Count</strong> and click the <strong>(x)</strong> to remove it.</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<p><img alt="Bar chart details" src="https://cdn.qwiklabs.com/KDjozmpA5huAnnLzy9Vq%2BiS1%2FhVeGIbVoLamuZpMZqI%3D"></p>
+<ol start="8">
+<li>To gain insight on vehicle volume you need to add a metric for each vehicle detected.</li>
+<li>In the <strong>Metric</strong> section, click <strong>Add metric</strong> and add <strong>sensorId</strong>.</li>
+<li>A count distinct for this column is automatically created.  This metric set as a count distinct does not give you a true sense of traffic volume.  Click the <strong>CTD</strong> text next to <strong>sensor_Id</strong> and on the popup window choose <strong>Count</strong> .  Type the name <strong>vehicles</strong> in the name box.  Click in the report space off the popup to close it.  The change is saved automatically.</li>
+<li>In the <strong>Metric</strong> section, mouse over <strong>latitude</strong> and click the <strong>(x)</strong> to remove it.</li>
+<li>The Dimension should be set to highway and the Metric should be set to sensorId. Notice the chart below is sorted in descending order by default. The highway with the most vehicles is displayed first.</li>
+</ol>
+<p><img alt="Bar chart" src="https://cdn.qwiklabs.com/6ygZDkjPcDeW9CtD5WRLNNgO8%2FesynQmOQ9qj%2BqZssY%3D"></p>
+<ol start="13">
+<li>
+<p>To enhance the chart, change the bar labels. In the <strong>Chart</strong> properties window, click the <strong>STYLE</strong> tab.</p>
+</li>
+<li>
+<p>In the <strong>Bar chart</strong> section, check <strong>Show data labels</strong>.</p>
+</li>
+<li>
+<p>The total number of vehicles is displayed above each bar in the chart.</p>
+</li>
+</ol>
+<h2 id="step5">Task 3. Creating a chart using a custom query</h2>
+<p>You may find that it is easier to work with an existing query to produce the desired reports and visualizations in Looker Studio. The Custom Query option lets you leverage BigQuery's full query capabilities such as joins, unions, and analytical functions.</p>
+<p>Alternatively, you can leverage BigQuery's full query capabilities by creating a view. A view is a virtual table defined by a SQL query. You can query data in a view by adding the dataset containing the view as a data source.</p>
+<p>When you specify a SQL query as your BigQuery data source, the results of the query are in table format, which becomes the field definition (schema) for your data source. When you use a custom query as a data source, Looker Studio uses your SQL as an inner select statement for each generated query to BigQuery. For more information on custom queries in Looker Studio, consult the  <a href="https://support.google.com/datastudio/?hl=en#topic=6267740" target="_blank">online help</a>.</p>
+<ol>
+<li>
+<p>To add a bar chart to your report that uses a custom query data source:</p>
+</li>
+<li>
+<p>From the <strong>Add a chart</strong> menu select the first <strong>Bar chart</strong>.</p>
+</li>
+<li>
+<p>In the <strong>Bar chart</strong> properties window, on the <strong>Setup</strong> tab, notice the value for Data Source (current_conditions) and the default values for Dimension and Metric are the same as the previous chart. In the <strong>Data Source</strong> section, click the <strong>current_conditions</strong> data source.  At the bottom of the pane choose <strong>Add data</strong>.</p>
+</li>
+<li>
+<p>Under <strong>Google Connectors</strong>, select <strong>BigQuery</strong>.</p>
+</li>
+<li>
+<p>Select <strong>CUSTOM QUERY</strong> in the first grouping.</p>
+</li>
+<li>
+<p>For <strong>Billing Project</strong>, select your project.</p>
+</li>
+<li>
+<p>Type the following in the <strong>Enter custom query</strong> window and replace the <code>&lt;PROJECTID&gt;</code> with your Project ID:</p>
+</li>
+</ol>
+<ql-code-block language="plaintext">
+SELECT max(speed) as maxspeed, min(speed) as minspeed,
+avg(speed) as avgspeed, highway
+FROM `&lt;PROJECTID&gt;.demos.current_conditions`
+group by highway
+</ql-code-block>
+<p>This query uses max/min/avg functions to give you the corresponding speed for each highway.</p>
+<ol start="8">
+<li>Click <strong>ADD</strong>.</li>
+<li>When prompted, click <strong>ADD TO REPORT</strong>.</li>
+</ol>
+<ql-warningbox><strong>Note: </strong>Looker Studio may be unable to determine the appropriate Dimension and Metrics for the chart. This requires you to adjust the graph options.</ql-warningbox>
+<ol start="10">
+<li>In the <strong>Bar chart</strong> properties, on the <strong>Setup</strong> tab, in the <strong>Metric</strong> section, click <strong>Record count</strong>.</li>
+<li>In the <strong>Metric picker,</strong> select <strong>maxspeed</strong>.</li>
+<li>In the <strong>Metric</strong> section, click <strong>Add metric</strong>.</li>
+<li>In the <strong>Metric picker</strong>, select <strong>minspeed</strong>.</li>
+<li>In the <strong>Metric</strong> section, click <strong>Add metric</strong>.</li>
+<li>In the <strong>Metric picker</strong>, select <strong>avgspeed</strong>.</li>
+<li>Remove the metric other than maxspeed, minspeed and avgspeed, if exist.</li>
+</ol>
+<p>Your chart now displays the maximum speed, minimum speed, and average speed for each highway.</p>
+<p>Notice each bar has a default color based on the order the metrics were added to the chart.</p>
+<p><img alt="Bar chart. maxspeed is blue, minspeed is teal, and avgspeed is pink." src="https://cdn.qwiklabs.com/pvhJKwNWMkziGgstC9F9UiTkpc%2ByuB0HfFWO0A1MOWs%3D"></p>
+<ol start="17">
+<li>For readability, change the chart styles. In the <strong>Chart</strong> properties, click the <strong>Style</strong> tab.</li>
+<li>In the <strong>Color By</strong> section, click on the boxes to select different colors.</li>
+</ol>
+<p><img alt="Color By section" src="https://cdn.qwiklabs.com/C443EY0ohpxoR%2BwQwUDFQuimw1N6rpNg8JERWn5rVVA%3D"></p>
+<p>Click <em>Check my progress</em> to verify the objective.</p>
+<ql-activity-tracking step="2">
+      Create a chart using a custom query
+  </ql-activity-tracking>
+<h2 id="step6">Task 4. Viewing your query history</h2>
+<p>You can view queries submitted via the BigQuery Connector by examining your query history in the BigQuery web interface. Using the query history, you can estimate query costs, and you can save queries for use in other scenarios.</p>
+<h3>Open BigQuery Console</h3>
+<ol>
+<li>In the Google Cloud Console, select <strong>Navigation menu</strong> &gt; <strong>BigQuery</strong>.</li>
+</ol>
+<p>The <strong>Welcome to BigQuery in the Cloud Console</strong> message box opens. This message box provides a link to the quickstart guide and lists UI updates.</p>
+<ol start="2">
+<li>Click <strong>Done</strong>.</li>
+</ol>
+<ol>
+<li>In the bottom panel the first item in the list will be <strong>Personal history</strong>. On your initial visit to the page the query history should appear on the bottom right underneath the Query editor pane. If it is not loaded click the <strong>Personal history</strong> link.</li>
+<li>The list of queries is displayed with the most recent queries first. Click on any Query to view details on the query such as Job ID and Bytes Processed.</li>
+</ol>
+<h2 id="step7">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Setup</a></li><li><a href="#step3">Task 1. Creating a data source in Looker Studio</a></li><li><a href="#step4">Task 2. Creating a bar chart using a calculated field</a></li><li><a href="#step5">Task 3. Creating a chart using a custom query</a></li><li><a href="#step6">Task 4. Viewing your query history</a></li><li><a href="#step7">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+Streaming Data Processing3: Streaming Analytics and Dashboards
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+1m setup
+&middot;
+120m access
+&middot;
+120m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>fundamental</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/2188">https://googlecoursera.qwiklabs.com/catalog_lab/2188</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="edit_lab_review_35098978" action="/lab_reviews/35098978" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><input type="hidden" name="_method" value="patch" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='2' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='2' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="2188" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" value="-1" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+broken</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

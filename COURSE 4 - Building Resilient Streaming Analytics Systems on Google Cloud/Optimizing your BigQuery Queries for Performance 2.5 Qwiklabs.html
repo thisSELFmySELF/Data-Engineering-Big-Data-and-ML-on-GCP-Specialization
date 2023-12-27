@@ -1,0 +1,1461 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Optimizing your BigQuery Queries for Performance 2.5 | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-730738e6a42cf2d08765342db72a96e1c168e026.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-5bdf08e3db82244d1fd919ef04497683c2eb8f48.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-5be9380d7cac08f7e2dac9c53445a154bd807c47.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="OB5aSTa9BqEo2WdmK4TGcNKrlhWr6UTF2ZhzXtPBQHRMJJyQdamzYoFf/wdgQjzIXemTVC5CMo8zMt5IWR+r/g==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;program_announcements&quot;,&quot;canonical_domain_redirect&quot;,&quot;program_learning_assignment&quot;,&quot;barker&quot;,&quot;used_in&quot;,&quot;course_upgrade&quot;,&quot;community_forum&quot;,&quot;peer_assignment&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;teams&quot;,&quot;content_provider_admin&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='In this lab, we will look at a number of techniques for reducing query execution times and cost in BigQuery.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Optimizing your BigQuery Queries for Performance 2.5 | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='In this lab, we will look at a number of techniques for reducing query execution times and cost in BigQuery.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32528972?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32528972?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-29602dc272dc25b87d80aad082aeac190a74d2ab.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="3911b6c0ebd6f3fc" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Optimizing your BigQuery Queries for Performance 2.5</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32528972?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32528972?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32528972?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32528972?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32528972?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32528972?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32528972?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32528972?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32528972?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32528972?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32528972?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32528972?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32528972?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32528972?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32528972?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32528972?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32528972?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32528972?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32528972?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/50
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Minimize I/O
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Minimize I/O' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 10
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Cache results of previous queries
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Cache results of previous queries' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 10
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Denormalization
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Denormalization' step_no='3'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-3'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Joins
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Joins' step_no='4'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-4'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Avoid overwhelming a worker
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Avoid overwhelming a worker' step_no='5'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-5'>
+</span>
+/ 10
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Approximate aggregation functions
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Approximate aggregation functions' step_no='6'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-6'>
+</span>
+/ 10
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Optimizing your BigQuery Queries for Performance 2.5&quot;,&quot;lab_name&quot;:&quot;Optimizing your BigQuery Queries for Performance 2.5&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32528972' data-lab-billing-limit='0.0' data-lab-duration='3600' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:3600}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Optimizing your BigQuery Queries for Performance 2.5
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>1 hour</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32528972/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.4735'></div>
+
+</a><ql-button aria-label='Rate Lab' id='rate-lab-btn' label='Rate Lab' text></ql-button>
+</div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>Performance tuning of BigQuery is usually carried out because we wish to reduce query execution times or cost. In this lab, we will look at a number of performance optimizations that might work for your use case. Performance tuning should be carried out only at the end of the development stage, and only if it is observed that typical queries take too long.</p>
+<p>It is far better to have flexible table schemas and elegant, readable, and maintainable queries than to obfuscate table layouts and queries in search of a tiny bit of performance. However, there will be instances where you do need to improve the performance of your queries, perhaps because they are carried out so often that small improvements are meaningful. Another aspect is that knowledge of performance tradeoffs can help you in deciding between alternative designs.</p>
+<h3>Objectives</h3>
+<p>In this lab, you learn about the following techniques for reducing BigQuery execution times and costs:</p>
+<ul>
+<li>
+<p>Minimizing I/O</p>
+</li>
+<li>
+<p>Caching results of previous queries</p>
+</li>
+<li>
+<p>Performing efficient joins</p>
+</li>
+<li>
+<p>Avoid overwhelming single workers</p>
+</li>
+<li>
+<p>Using approximate aggregation functions</p>
+</li>
+</ul>
+<h2 id="step2">Setup and requirements</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+<h3>Open BigQuery Console</h3>
+<ol>
+<li>In the Google Cloud Console, select <strong>Navigation menu</strong> &gt; <strong>BigQuery</strong>.</li>
+</ol>
+<p>The <strong>Welcome to BigQuery in the Cloud Console</strong> message box opens. This message box provides a link to the quickstart guide and lists UI updates.</p>
+<ol start="2">
+<li>Click <strong>Done</strong>.</li>
+</ol>
+<h2 id="step3">Task 1. Minimize I/O</h2>
+<p>A query that computes the sum of three columns will be slower than a query that computes the sum of two columns, but most of the performance difference will be due to reading more data, not the extra addition. Therefore, a query that computes the mean of a column will be nearly as fast as a query whose aggregation method is to compute the variance of the data (even though computing variance requires BigQuery to keep track of both the sum and the sum of the squares) because most of the overhead of simple queries is caused by I/O, not by computation.</p>
+<h3>Be purposeful in SELECT</h3>
+<p>Because BigQuery uses columnar file formats, the fewer the columns that are read in a SELECT, the less the amount of data that needs to be read. In particular, doing a SELECT * reads every column of every row in the table, making it quite slow and expensive.</p>
+<p>The exception is when you use a SELECT * in a subquery, then only reference a few fields in an outer query; the BigQuery optimizer will be smart enough to only read the columns that are absolutely required.</p>
+<ol>
+<li>
+<p>Execute the following query in the <a href="https://console.cloud.google.com/bigquery" target="_blank">BigQuery EDITOR window</a>:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  bike_id,
+  duration
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+ORDER BY
+  duration DESC
+LIMIT
+  1
+</ql-code-block>
+<p>In the <strong>Query results</strong> window notice that the query completed in ~1.2s and processed ~372MB of data.</p>
+<ol start="2">
+<li>
+<p>Execute the following query in the BigQuery EDITOR window:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  *
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+ORDER BY
+  duration DESC
+LIMIT
+  1
+</ql-code-block>
+<p>In the <strong>Query results</strong> window notice that this query completed in ~4.5s and consumed ~2.6GB of data. Much longer!</p>
+<p>If you require nearly all the columns in a table, consider using <code>SELECT * EXCEPT</code> so as to not read the ones you don’t require.</p>
+<ql-infobox><strong>Note: </strong>BigQuery will cache query results to speed up repeat queries. Turn off this cache to see actual query processing performance by clicking <b>More &gt; Query settings</b> and un-checking <b>Use cached results</b>.</ql-infobox>
+<h3>Reduce data being read</h3>
+<p>When tuning a query, it is important to start with the data that is being read and consider whether it is possible to reduce this. Suppose we wish to find the typical duration of the most common one-way rentals.</p>
+<ol>
+<li>
+<p>Execute the following query into the BigQuery editor window:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  MIN(start_station_name) AS start_station_name,
+  MIN(end_station_name) AS end_station_name,
+  APPROX_QUANTILES(duration, 10)[OFFSET (5)] AS typical_duration,
+  COUNT(duration) AS num_trips
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+WHERE
+  start_station_id != end_station_id
+GROUP BY
+  start_station_id,
+  end_station_id
+ORDER BY
+  num_trips DESC
+LIMIT
+  10
+</ql-code-block>
+<p>The output of your query should look similar to the following:</p>
+<p><img alt="Results table with ten rows of data under the following column headings: Row, start_station_name, end_station_name, typical_duration, and num_trips." src="https://cdn.qwiklabs.com/w1OICOPlBwD39TDdWQcqdsmlna49AsHdXEcDOqXUlmc%3D"></p>
+<ol start="2">
+<li>Click on the <strong>Execution details</strong> tab of the <strong>Query results</strong> window.</li>
+</ol>
+<p>The details of the query indicate that the sorting (for the approximate quantiles for every station pair) required a repartition of the outputs of the input stage but most of the time is spent during computation.</p>
+<ol start="3">
+<li>
+<p>We can reduce the I/O overhead of the query if we do the filtering and grouping using the station name rather than the station id since we will need to read fewer columns. Execute the following query:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  start_station_name,
+  end_station_name,
+  APPROX_QUANTILES(duration, 10)[OFFSET(5)] AS typical_duration,
+  COUNT(duration) AS num_trips
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+WHERE
+  start_station_name != end_station_name
+GROUP BY
+  start_station_name,
+  end_station_name
+ORDER BY
+  num_trips DESC
+LIMIT
+  10
+</ql-code-block>
+<p>The above query avoids the need to read the two id columns and finishes in 10.8 seconds. This speedup is caused by the downstream effects of reading less data.</p>
+<p>The query result remains the same since there is a 1:1 relationship between the station name and the station id.</p>
+<h3>Reduce number of expensive computations</h3>
+<p>Suppose we wish to find the total distance traveled by each bicycle in our dataset.</p>
+<ol>
+<li>
+<p>A naive way to do this would be to find the distance traveled in each trip undertaken by each bicycle and sum them up:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  trip_distance AS (
+SELECT
+  bike_id,
+  ST_Distance(ST_GeogPoint(s.longitude,
+      s.latitude),
+    ST_GeogPoint(e.longitude,
+      e.latitude)) AS distance
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire,
+  `bigquery-public-data`.london_bicycles.cycle_stations s,
+  `bigquery-public-data`.london_bicycles.cycle_stations e
+WHERE
+  start_station_id = s.id
+  AND end_station_id = e.id )
+SELECT
+  bike_id,
+  SUM(distance)/1000 AS total_distance
+FROM
+  trip_distance
+GROUP BY
+  bike_id
+ORDER BY
+  total_distance DESC
+LIMIT
+  5
+</ql-code-block>
+<p><img alt="Four rows of data under the following column headings: Row, bike_id, and total_distance" src="https://cdn.qwiklabs.com/aS1KuNZDksjrAydT1AYbsB0NuEOaV7d4IdcqK00WGHc%3D"></p>
+<p>The above query takes 9.8 seconds (55 seconds of slot time) and shuffles 1.22 MB. The result is that some bicycles have been ridden nearly 6000 kilometers.</p>
+<ol start="2">
+<li>
+<p>Computing the distance is a pretty expensive operation and we can avoid joining the <code>cycle_stations</code> table against the <code>cycle_hire table</code> if we precompute the distances between all pairs of stations:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  stations AS (
+SELECT
+  s.id AS start_id,
+  e.id AS end_id,
+  ST_Distance(ST_GeogPoint(s.longitude,
+      s.latitude),
+    ST_GeogPoint(e.longitude,
+      e.latitude)) AS distance
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_stations s,
+  `bigquery-public-data`.london_bicycles.cycle_stations e ),
+trip_distance AS (
+SELECT
+  bike_id,
+  distance
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire,
+  stations
+WHERE
+  start_station_id = start_id
+  AND end_station_id = end_id )
+SELECT
+  bike_id,
+  SUM(distance)/1000 AS total_distance
+FROM
+  trip_distance
+GROUP BY
+  bike_id
+ORDER BY
+  total_distance DESC
+LIMIT
+  5
+</ql-code-block>
+<p>This query only makes 600k geo-distance calculations vs. 24M previously. Now it takes 31.5 seconds of slot time (a 30% speedup), despite shuffling 33.05MB of data.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="1">
+      Minimize I/O
+  </ql-activity-tracking>
+<h2 id="step4">Task 2. Cache results of previous queries</h2>
+<p>The BigQuery service automatically caches query results in a temporary table. If the identical query is submitted within approximately 24 hours, the results are served from this temporary table without any recomputation. Cached results are extremely fast and do not incur charges.</p>
+<p>There are, however, a few caveats to be aware of. Query caching is based on exact string comparison. So even whitespaces can cause a cache miss. Queries are never cached if they exhibit non-deterministic behavior (for example, they use CURRENT_TIMESTAMP or RAND), if the table or view being queried has changed (even if the columns/rows of interest to the query are unchanged), if the table is associated with a streaming buffer (even if there are no new rows), if the query uses DML statements, or queries external data sources.</p>
+<h3>Cache intermediate results</h3>
+<p>It is possible to improve overall performance at the expense of increased I/O by taking advantage of temporary tables and materialized views.</p>
+<p>For example, suppose you have a number of queries that start out by finding the typical duration of trips between a pair of stations. The WITH clause (also called a Common Table Expression) improves readability but does not improve query speed or cost since results are not cached. The same holds for views and subqueries as well. If you find yourself using a WITH clause, view, or a subquery often, one way to potentially improve performance is to store the result into a table (or materialized view).</p>
+<ol>
+<li>
+<p>First you will need to create a dataset named  <code>mydataset</code>  in the <code>eu (multiple regions in European Union)</code> region (where the bicycle data resides) under your project in BigQuery.</p>
+</li>
+</ol>
+<ul>
+<li>In the left pane in the <strong>Explorer</strong> section, click on the <strong>View action</strong> icon (three dots) near your BigQuery project (<code>qwiklabs-gcp-xxxx</code>) and select <strong>Create dataset</strong>.</li>
+</ul>
+<p>In the <strong>Create dataset</strong> dialog:</p>
+<ul>
+<li>
+<p>Set the <strong>Dataset ID</strong> to <code>mydataset</code>.</p>
+</li>
+<li>
+<p>Set the <strong>Data location</strong> to <code>eu (multiple regions in European Union)</code>.</p>
+</li>
+<li>
+<p>Leave all other options at their default values.</p>
+</li>
+<li>
+<p>To finish, click the blue <strong>CREATE DATASET</strong> button.</p>
+</li>
+<li>
+<p>Now you may execute the following query:</p>
+<ql-code-block language="sql">
+CREATE OR REPLACE TABLE
+  mydataset.typical_trip AS
+SELECT
+  start_station_name,
+  end_station_name,
+  APPROX_QUANTILES(duration, 10)[OFFSET (5)] AS typical_duration,
+  COUNT(duration) AS num_trips
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+GROUP BY
+  start_station_name,
+  end_station_name
+</ql-code-block>
+</li>
+</ul>
+<ol start="2">
+<li>
+<p>Use the table created to find days when bicycle trips are much longer than usual:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  EXTRACT (DATE
+  FROM
+    start_date) AS trip_date,
+  APPROX_QUANTILES(duration / typical_duration, 10)[OFFSET(5)] AS ratio,
+  COUNT(*) AS num_trips_on_day
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire AS hire
+JOIN
+  mydataset.typical_trip AS trip
+ON
+  hire.start_station_name = trip.start_station_name
+  AND hire.end_station_name = trip.end_station_name
+  AND num_trips &gt; 10
+GROUP BY
+  trip_date
+HAVING
+  num_trips_on_day &gt; 10
+ORDER BY
+  ratio DESC
+LIMIT
+  10
+</ql-code-block>
+<ol start="3">
+<li>
+<p>Use the WITH clause to find days when bicycle trips are much longer than usual:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+typical_trip AS (
+SELECT
+  start_station_name,
+  end_station_name,
+  APPROX_QUANTILES(duration, 10)[OFFSET (5)] AS typical_duration,
+  COUNT(duration) AS num_trips
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+GROUP BY
+  start_station_name,
+  end_station_name )
+SELECT
+  EXTRACT (DATE
+  FROM
+    start_date) AS trip_date,
+  APPROX_QUANTILES(duration / typical_duration, 10)[
+OFFSET
+  (5)] AS ratio,
+  COUNT(*) AS num_trips_on_day
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire AS hire
+JOIN
+  typical_trip AS trip
+ON
+  hire.start_station_name = trip.start_station_name
+  AND hire.end_station_name = trip.end_station_name
+  AND num_trips &gt; 10
+GROUP BY
+  trip_date
+HAVING
+  num_trips_on_day &gt; 10
+ORDER BY
+  ratio DESC
+LIMIT
+10
+</ql-code-block>
+<p>Notice the ~50% speedup since the average trip duration computation is avoided. Both queries return the same result, that trips on Christmas take longer than usual. Note, the table <code>mydataset.typical_trip</code> is not refreshed when new data is added to the <code>cycle_hire</code> table.</p>
+<p>One way to solve this problem of stale data is to use a materialized view or to schedule queries to update the table periodically. You should measure the cost of such updates to see whether the improvement in query performance makes up for the extra cost of maintaining the table or materialized view up-to-date.</p>
+<h3>Accelerate queries with BI Engine</h3>
+<p>If there are tables that you access frequently in Business Intelligence (BI) settings such as dashboards with aggregations and filters, one way to speed up your queries is to employ <strong>BI Engine</strong>. It will automatically store relevant pieces of data in memory (either actual columns from the table or derived results), and will use a specialized query processor tuned for working with mostly in-memory data. You can reserve the amount of memory (up to a current maximum of 10 GB) that BigQuery should use for its cache from the BigQuery Admin Console, under <strong>BI Engine</strong>.</p>
+<p>Make sure to reserve this memory in the same region as the dataset you are querying. Then, BigQuery will start to cache tables, parts of tables, and aggregations in memory and serve results faster.</p>
+<p>A primary use case for BI Engine is for tables that are accessed from dashboard tools such as Google Data Studio. By providing memory allocation for a BI Engine reservation, we can make dashboards that rely on a BigQuery backend much more responsive.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="2">
+      Cache results of previous queries
+  </ql-activity-tracking>
+<h2 id="step5">Task 3. Efficient joins</h2>
+<p>Joining two tables requires data coordination and is subject to limitations imposed by the communication bandwidth between slots. If it is possible to avoid a join, or reduce the amount of data being joined, do so.</p>
+<h3>Denormalization</h3>
+<p>One way to improve the read performance and avoid joins is to give up on storing data efficiently, and instead add redundant copies of data. This is called denormalization.</p>
+<ul>
+<li>
+<p>Thus, instead of storing the bicycle station latitudes and longitudes separately from the cycle hire information, we could create a denormalized table:</p>
+<ql-code-block language="sql">
+CREATE OR REPLACE TABLE
+  mydataset.london_bicycles_denorm AS
+SELECT
+  start_station_id,
+  s.latitude AS start_latitude,
+  s.longitude AS start_longitude,
+  end_station_id,
+  e.latitude AS end_latitude,
+  e.longitude AS end_longitude
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire AS h
+JOIN
+  `bigquery-public-data`.london_bicycles.cycle_stations AS s
+ON
+  h.start_station_id = s.id
+JOIN
+  `bigquery-public-data`.london_bicycles.cycle_stations AS e
+ON
+  h.end_station_id = e.id
+</ql-code-block>
+<p>Then, all subsequent queries will not need to carry out the join because the table will contain the necessary location information for all trips.</p>
+<p>In this case, you are trading off storage and reading more data against the computational expense of a join. It is quite possible that the cost of reading more data from disk will outweigh the cost of the join -- you should measure whether denormalization brings performance benefits.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="3">
+    Denormalization
+</ql-activity-tracking>
+</li>
+</ul>
+<h3>Avoid self-joins of large tables</h3>
+<p>Self-joins happen when a table is joined with itself. While BigQuery supports self-joins, they can lead to performance degradation if the table being joined with itself is very large. In many cases, you can avoid the self-join by taking advantage of SQL features such as aggregation and window functions.</p>
+<p>Let’s look at an example. One of the BigQuery public datasets is the dataset of baby names published by the US Social Security Administration.</p>
+<ol>
+<li>
+<p>It is possible to query the dataset to find the most common male names in 2015 in the state of Massachusetts (Make sure your query is running in the US (multiple regions in United States) region. Click <strong>Compose New Query</strong> then select <strong>More</strong> &gt; <strong>Query settings</strong> &gt; <strong>Advanced options</strong>, uncheck <strong>Automatic location selection</strong> and select <strong>Multi Region</strong> and select <strong>US (Multiple Regions in United States)</strong> or leave query to use <strong>Automatic location</strong> selection):</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  name,
+  number AS num_babies
+FROM
+  `bigquery-public-data`.usa_names.usa_1910_current
+WHERE
+  gender = 'M'
+  AND year = 2015
+  AND state = 'MA'
+ORDER BY
+  num_babies DESC
+LIMIT
+  5
+</ql-code-block>
+<p><img alt="Five rows of data below the following column headings: Row, name, and num_babies." src="https://cdn.qwiklabs.com/RVMvR4%2FVH6tIr%2FanBzTP8j3A2emvXnCLULJXqdUEBZw%3D"></p>
+<ol start="2">
+<li>Similarly, query the dataset to find the most common female names in 2015 in the state of Massachusetts:</li>
+</ol>
+<p><img alt="Five rows of data below the following column headings: Row, name, and num_babies." src="https://cdn.qwiklabs.com/rWO89zbfs5ELZ1hEmthfYvNATfW2xvPgUR7zO4NRl7M%3D"></p>
+<ol start="3">
+<li>
+<p>What are the most common names assigned to both male and female babies in the country over all the years in the dataset? A naive way to solve this problem involves reading the input table twice and doing a self-join:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+male_babies AS (
+SELECT
+  name,
+  number AS num_babies
+FROM
+  `bigquery-public-data`.usa_names.usa_1910_current
+WHERE
+  gender = 'M' ),
+female_babies AS (
+SELECT
+  name,
+  number AS num_babies
+FROM
+  `bigquery-public-data`.usa_names.usa_1910_current
+WHERE
+  gender = 'F' ),
+both_genders AS (
+SELECT
+  name,
+  SUM(m.num_babies) + SUM(f.num_babies) AS num_babies,
+  SUM(m.num_babies) / (SUM(m.num_babies) + SUM(f.num_babies)) AS frac_male
+FROM
+  male_babies AS m
+JOIN
+  female_babies AS f
+USING
+  (name)
+GROUP BY
+  name )
+SELECT
+  *
+FROM
+  both_genders
+WHERE
+  frac_male BETWEEN 0.3
+  AND 0.7
+ORDER BY
+  num_babies DESC
+LIMIT
+  5
+</ql-code-block>
+<p>This took 74 seconds and yielded:</p>
+<p><img alt="Five rows of data below the following column headings: Row, name, num_babies, and frac_male." src="https://cdn.qwiklabs.com/4L4R0uX8T8NffH1L5yHbt7ejUte6HamV8nFUoP44FE4%3D"></p>
+<p>To add insult to injury, the answer is also wrong -- as much as we like the name Jordan, the entire US population is only 300 million, so there cannot have been 982 million babies with that name. The self-JOIN unfortunately joins across state and year boundaries.</p>
+<ol start="4">
+<li>
+<p>A faster, more elegant (and correct!) solution is to recast the query to read the input only once and avoid the self-join completely:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+all_babies AS (
+SELECT
+  name,
+  SUM(
+  IF
+    (gender = 'M',
+      number,
+      0)) AS male_babies,
+  SUM(
+  IF
+    (gender = 'F',
+      number,
+      0)) AS female_babies
+FROM
+  `bigquery-public-data.usa_names.usa_1910_current`
+GROUP BY
+  name ),
+both_genders AS (
+SELECT
+  name,
+  (male_babies + female_babies) AS num_babies,
+  SAFE_DIVIDE(male_babies,
+    male_babies + female_babies) AS frac_male
+FROM
+  all_babies
+WHERE
+  male_babies &gt; 0
+  AND female_babies &gt; 0 )
+SELECT
+  *
+FROM
+  both_genders
+WHERE
+  frac_male BETWEEN 0.3
+  AND 0.7
+ORDER BY
+  num_babies DESC
+LIMIT
+  5
+</ql-code-block>
+<p>This took only 2.4 seconds, a 30x speedup.</p>
+<h3>Reduce data being joined</h3>
+<p>It is possible to carry out the query above with an efficient join as long as we reduce the amount of data being joined by grouping the data by name and gender early on:</p>
+<ul>
+<li>
+<p>Try the following query:</p>
+<ql-code-block language="SQL">
+WITH
+all_names AS (
+SELECT
+  name,
+  gender,
+  SUM(number) AS num_babies
+FROM
+  `bigquery-public-data`.usa_names.usa_1910_current
+GROUP BY
+  name,
+  gender ),
+male_names AS (
+SELECT
+  name,
+  num_babies
+FROM
+  all_names
+WHERE
+  gender = 'M' ),
+female_names AS (
+SELECT
+  name,
+  num_babies
+FROM
+  all_names
+WHERE
+  gender = 'F' ),
+ratio AS (
+SELECT
+  name,
+  (f.num_babies + m.num_babies) AS num_babies,
+  m.num_babies / (f.num_babies + m.num_babies) AS frac_male
+FROM
+  male_names AS m
+JOIN
+  female_names AS f
+USING
+  (name) )
+SELECT
+  *
+FROM
+  ratio
+WHERE
+  frac_male BETWEEN 0.3
+  AND 0.7
+ORDER BY
+  num_babies DESC
+LIMIT
+  5
+</ql-code-block>
+<p>The early grouping served to trim the data early in the query, before the query performs a JOIN. That way, shuffling and other complex operations are only executed on the much smaller data and remain quite efficient. The query above finished in 2 seconds and returned the correct result.</p>
+</li>
+</ul>
+<h3>Use a window function instead of a self-join</h3>
+<p>Suppose you wish to find the duration between a bike being dropped off and it being rented again, i.e., the duration that a bicycle stays at the station.  This is an example of a dependent relationship between rows. It might appear that the only way to solve this is to join the table with itself, matching the <code>end_date</code> of one trip against the <code>start_date</code> of the next. (Make sure your query is running in the <code>eu (multiple regions in European Union)</code> region. Click <strong>Compose New Query</strong> and then select <strong>More</strong> &gt; <strong>Query settings</strong> &gt; <strong>Additional settings</strong> &gt; <strong>Data location</strong></p>
+<ol>
+<li>
+<p>You can, however, avoid a self-join by using a window function:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  bike_id,
+  start_date,
+  end_date,
+  TIMESTAMP_DIFF( start_date, LAG(end_date) OVER (PARTITION BY bike_id ORDER BY start_date), SECOND) AS time_at_station
+FROM
+  `bigquery-public-data`.london_bicycles.cycle_hire
+LIMIT
+  5
+</ql-code-block>
+<p><img alt="Five rows of data below the following column headings: Row, bike_id, start_date, end_date, and time_at_station." src="https://cdn.qwiklabs.com/mvvPdE0R%2FCwe7R8ygd%2BnZ7TynpCx3XM0cO3nIj61rzY%3D"></p>
+<p>Notice that the first row has a <code>null</code> for <code>time_at_station</code> since we don’t have a timestamp for the previous dropoff. After that, the <code>time_at_station</code> tracks the difference between the previous dropoff and the current pickup.</p>
+<ol start="2">
+<li>
+<p>Using this, we can compute the average time that a bicycle is unused at each station and rank stations by that measure:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  unused AS (
+  SELECT
+    bike_id,
+    start_station_name,
+    start_date,
+    end_date,
+    TIMESTAMP_DIFF(start_date, LAG(end_date) OVER (PARTITION BY bike_id ORDER BY start_date), SECOND) AS time_at_station
+  FROM
+    `bigquery-public-data`.london_bicycles.cycle_hire )
+SELECT
+  start_station_name,
+  AVG(time_at_station) AS unused_seconds
+FROM
+  unused
+GROUP BY
+  start_station_name
+ORDER BY
+  unused_seconds ASC
+LIMIT
+  5
+</ql-code-block>
+<p><img alt="Five rows of data below the following column headings: Row, start_station_name, and unused_seconds." src="https://cdn.qwiklabs.com/FQu3XM8fb%2FdFEKbooFvzlvT64jxTaKzy0Y2Wf2gYifs%3D"></p>
+<h3>Join with precomputed values</h3>
+<p>Sometimes, it can be helpful to precompute functions on smaller tables, and then join with the precomputed values rather than repeat an expensive calculation each time.</p>
+<p>For example, suppose we wish to find the pair of stations between which our customers ride bicycles at the fastest pace. To compute the pace (minutes per kilometer) at which they ride, we need to divide the duration of the ride by the distance between stations.</p>
+<ol>
+<li>
+<p>We could create a denormalized table with distances between stations and then compute the average pace:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  denormalized_table AS (
+  SELECT
+    start_station_name,
+    end_station_name,
+    ST_DISTANCE(ST_GeogPoint(s1.longitude,
+        s1.latitude),
+      ST_GeogPoint(s2.longitude,
+        s2.latitude)) AS distance,
+    duration
+  FROM
+    `bigquery-public-data`.london_bicycles.cycle_hire AS h
+  JOIN
+    `bigquery-public-data`.london_bicycles.cycle_stations AS s1
+  ON
+    h.start_station_id = s1.id
+  JOIN
+    `bigquery-public-data`.london_bicycles.cycle_stations AS s2
+  ON
+    h.end_station_id = s2.id ),
+  durations AS (
+  SELECT
+    start_station_name,
+    end_station_name,
+    MIN(distance) AS distance,
+    AVG(duration) AS duration,
+    COUNT(*) AS num_rides
+  FROM
+    denormalized_table
+  WHERE
+    duration &gt; 0
+    AND distance &gt; 0
+  GROUP BY
+    start_station_name,
+    end_station_name
+  HAVING
+    num_rides &gt; 100 )
+SELECT
+  start_station_name,
+  end_station_name,
+  distance,
+  duration,
+  duration/distance AS pace
+FROM
+  durations
+ORDER BY
+  pace ASC
+LIMIT
+  5
+</ql-code-block>
+<p>The above query invokes the geospatial function <code>ST_DISTANCE</code> once for each row in the <code>cycle_hire</code> table (24 million times), takes 14.7 seconds and processes 1.9 GB.</p>
+<ol start="2">
+<li>
+<p>Alternately, we can use the <code>cycle_stations</code> table to precompute the distance between every pair of stations (this is a self-join) and then join it with the reduced-size table of average duration between stations:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  distances AS (
+  SELECT
+    a.id AS start_station_id,
+    a.name AS start_station_name,
+    b.id AS end_station_id,
+    b.name AS end_station_name,
+    ST_DISTANCE(ST_GeogPoint(a.longitude,
+        a.latitude),
+      ST_GeogPoint(b.longitude,
+        b.latitude)) AS distance
+  FROM
+    `bigquery-public-data`.london_bicycles.cycle_stations a
+  CROSS JOIN
+    `bigquery-public-data`.london_bicycles.cycle_stations b
+  WHERE
+    a.id != b.id ),
+  durations AS (
+  SELECT
+    start_station_id,
+    end_station_id,
+    AVG(duration) AS duration,
+    COUNT(*) AS num_rides
+  FROM
+    `bigquery-public-data`.london_bicycles.cycle_hire
+  WHERE
+    duration &gt; 0
+  GROUP BY
+    start_station_id,
+    end_station_id
+  HAVING
+    num_rides &gt; 100 )
+SELECT
+  start_station_name,
+  end_station_name,
+  distance,
+  duration,
+  duration/distance AS pace
+FROM
+  distances
+JOIN
+  durations
+USING
+  (start_station_id,
+    end_station_id)
+ORDER BY
+  pace ASC
+LIMIT
+  5
+</ql-code-block>
+<p>The recast query with the more efficient joins takes only 8.2 seconds, a 1.8x speedup and processes 554 MB, a nearly 4x reduction in cost.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="4">
+      Joins
+  </ql-activity-tracking>
+<h2 id="step6">Task 4. Avoid overwhelming a worker</h2>
+<p>Some operations (e.g. ordering) have to be carried out on a single worker. Having to sort too much data can overwhelm a worker’s memory and result in a “resources exceeded” error. Avoid overwhelming the worker with too much data. As the hardware in Google data centers is upgraded, what “too much” means in this context expands over time. Currently, this is on the order of one GB.</p>
+<h3>Limiting large sorts</h3>
+<ol>
+<li>
+<p>Let’s say that we wish to go through the rentals and number them 1, 2, 3, etc. in the order that the rental ended. We could do that using the ROW_NUMBER() function:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  rental_id,
+  ROW_NUMBER() OVER(ORDER BY end_date) AS rental_number
+FROM
+  `bigquery-public-data.london_bicycles.cycle_hire`
+ORDER BY
+  rental_number ASC
+LIMIT
+  5
+</ql-code-block>
+<p>It takes 34.5 seconds to process just 372 MB because it needs to sort the entirety of the London bicycles dataset on a single worker. Had we processed a larger dataset, it would have overwhelmed that worker.</p>
+<ol start="2">
+<li>
+<p>We might want to consider whether it is possible to limit the large sorts and distribute them. Indeed, it is possible to extract the date from the rentals and then sort trips within each day:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+WITH
+  rentals_on_day AS (
+  SELECT
+    rental_id,
+    end_date,
+    EXTRACT(DATE
+    FROM
+      end_date) AS rental_date
+  FROM
+    `bigquery-public-data.london_bicycles.cycle_hire` )
+SELECT
+  rental_id,
+  rental_date,
+  ROW_NUMBER() OVER(PARTITION BY rental_date ORDER BY end_date) AS rental_number_on_day
+FROM
+  rentals_on_day
+ORDER BY
+  rental_date ASC,
+  rental_number_on_day ASC
+LIMIT
+  5
+</ql-code-block>
+<p>This takes 15.1 seconds (a 2x speedup) because the sorting can be done on just a single day of data at a time.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="5">
+      Avoid overwhelming a worker
+  </ql-activity-tracking>
+<h3>Data skew</h3>
+<p>The same problem of overwhelming a worker (in this case, overwhelm the memory of the worker) can happen during an ARRAY_AGG with GROUP BY if one of the keys is much more common than the others.</p>
+<ol>
+<li>
+<p>Because there are more than 3 million GitHub repositories and the commits are well distributed among them, this query succeeds (make sure you execute the query in the <code>us (multiple regions in United States)</code> processing center):</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  repo_name,
+  ARRAY_AGG(STRUCT(author,
+      committer,
+      subject,
+      message,
+      trailer,
+      difference,
+      encoding)
+  ORDER BY
+    author.date.seconds)
+FROM
+  `bigquery-public-data.github_repos.commits`,
+  UNNEST(repo_name) AS repo_name
+GROUP BY
+  repo_name
+</ql-code-block>
+<p>Note, while this query will succeed, it can take upwards of 30 minutes to do so. If you understand the query, move on in the lab.</p>
+<ol start="2">
+<li>
+<p>Most of the people using GitHub live in only a few time zones, so grouping by the timezone fails -- we are asking a single worker to sort a significant fraction of 750GB:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  author.tz_offset,
+  ARRAY_AGG(STRUCT(author,
+      committer,
+      subject,
+      message,
+      trailer,
+      difference,
+      encoding)
+  ORDER BY
+    author.date.seconds)
+FROM
+  `bigquery-public-data.github_repos.commits`
+GROUP BY
+  author.tz_offset
+</ql-code-block>
+<ol start="3">
+<li>
+<p>If you do require sorting all the data, use more granular keys (i.e. distribute the group’s data over more workers) and then aggregate the results corresponding to the desired key. For example, instead of grouping only by the time zone, it is possible to group by both <code>timezone</code> and <code>repo_name</code> and then aggregate across repos to get the actual answer for each timezone:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  repo_name,
+  author.tz_offset,
+  ARRAY_AGG(STRUCT(author,
+      committer,
+      subject,
+      message,
+      trailer,
+      difference,
+      encoding)
+  ORDER BY
+    author.date.seconds)
+FROM
+  `bigquery-public-data.github_repos.commits`,
+  UNNEST(repo_name) AS repo_name
+GROUP BY
+  repo_name,
+  author.tz_offset
+</ql-code-block>
+<p>Note, while this query will succeed, it can take upwards of 15 minutes to do so. If you understand the query, move on in the lab.</p>
+<h2 id="step7">Task 5. Approximate aggregation functions</h2>
+<p>BigQuery provides fast, low-memory approximations of aggregate functions. Instead of using COUNT(DISTINCT …), we can use APPROX_COUNT_DISTINCT on large data streams when a small statistical uncertainty in the result is tolerable.</p>
+<h3>Approximate count</h3>
+<ol>
+<li>
+<p>We can find the number of unique GitHub repositories using:</p>
+</li>
+</ol>
+<ql-code-block language="SQL">
+SELECT
+  COUNT(DISTINCT repo_name) AS num_repos
+FROM
+  `bigquery-public-data`.github_repos.commits,
+  UNNEST(repo_name) AS repo_name
+</ql-code-block>
+<p>The above query takes 8.3 seconds to compute the correct result of 3347770.</p>
+<ol start="2">
+<li>
+<p>Using the approximate function:</p>
+</li>
+</ol>
+<ql-code-block language="SQL">
+SELECT
+  APPROX_COUNT_DISTINCT(repo_name) AS num_repos
+FROM
+  `bigquery-public-data`.github_repos.commits,
+  UNNEST(repo_name) AS repo_name
+</ql-code-block>
+<p>The above query takes 3.9 seconds (a 2x speedup) and returns an approximate result of 3399473, which overestimates the correct answer by 1.5%.</p>
+<p>The approximate algorithm is much more efficient than the exact algorithm only on large datasets and is recommended in use-cases where errors of approximately 1% are tolerable. Before using the approximate function, measure your use case!</p>
+<p>Other available approximate functions include APPROX_QUANTILES to compute percentiles, APPROX_TOP_COUNT to find the top elements and APPROX_TOP_SUM to compute top elements based on the sum of an element.</p>
+<p>Click <strong>Check my progress</strong> to verify the objective.</p>
+<ql-activity-tracking step="6">
+      Approximate aggregation functions
+  </ql-activity-tracking>
+<h2 id="step8">Congratulations!</h2>
+<p>You've learned about a number of techniques to potentially improve your query performance. While considering some of these techniques, remember the legendary computer scientist Donald Knuth's quote, "Premature optimization is the root of all evil."</p>
+<h3>Next steps / Learn more</h3>
+<ul>
+<li>Google Cloud Platform <a href="https://cloud.google.com/bigquery/docs/best-practices-performance-overview" target="_blank">documentation for optimizing query performance</a>.</li>
+<li>BigQuery <a href="https://cloud.google.com/bigquery/docs/best-practices-costs" target="_blank">best practices for controlling costs</a>.</li>
+</ul>
+<h2 id="step9">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Setup and requirements</a></li><li><a href="#step3">Task 1. Minimize I/O</a></li><li><a href="#step4">Task 2. Cache results of previous queries</a></li><li><a href="#step5">Task 3. Efficient joins</a></li><li><a href="#step6">Task 4. Avoid overwhelming a worker</a></li><li><a href="#step7">Task 5. Approximate aggregation functions</a></li><li><a href="#step8">Congratulations!</a></li><li><a href="#step9">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+In this lab, we will look at a number of techniques for reducing query execution times and cost in BigQuery.
+</p>
+<p>
+This lab is included in the quest
+<a href="/quests/269">BigQuery Foundations Quest</a>.
+If you complete this lab you&#39;ll receive credit for it when you enroll in this quest.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+60m access
+&middot;
+60m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>advanced</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/4034">https://googlecoursera.qwiklabs.com/catalog_lab/4034</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="edit_lab_review_35099431" action="/lab_reviews/35099431" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><input type="hidden" name="_method" value="patch" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='5' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='5' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="4034" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" value="2" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

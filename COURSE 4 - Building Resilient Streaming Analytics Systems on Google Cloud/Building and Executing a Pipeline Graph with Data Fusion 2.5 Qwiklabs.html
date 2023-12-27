@@ -1,0 +1,841 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Building and Executing a Pipeline Graph with Data Fusion 2.5 | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-730738e6a42cf2d08765342db72a96e1c168e026.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-5bdf08e3db82244d1fd919ef04497683c2eb8f48.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-5be9380d7cac08f7e2dac9c53445a154bd807c47.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="E2hjsBgfSjSjaqNhUIDJmFee0T/4/QcS3Psb2Qmubyo13nvQoZ9YH07opIz6XsgE0R6lpSv8xkuwCUVWip7/9A==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;search_updates&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;program_announcements&quot;,&quot;canonical_domain_redirect&quot;,&quot;program_learning_assignment&quot;,&quot;barker&quot;,&quot;used_in&quot;,&quot;course_upgrade&quot;,&quot;community_forum&quot;,&quot;peer_assignment&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;teams&quot;,&quot;content_provider_admin&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='This tutorial shows you how to use the Wrangler and Data Pipeline features in Cloud Data Fusion to clean, transform, and process taxi trip data for further analysis.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Building and Executing a Pipeline Graph with Data Fusion 2.5 | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='This tutorial shows you how to use the Wrangler and Data Pipeline features in Cloud Data Fusion to clean, transform, and process taxi trip data for further analysis.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32528926?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32528926?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-29602dc272dc25b87d80aad082aeac190a74d2ab.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="f06038a75f602f0c" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Building and Executing a Pipeline Graph with Data Fusion 2.5</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32528926?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32528926?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32528926?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32528926?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32528926?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32528926?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32528926?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32528926?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32528926?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32528926?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32528926?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32528926?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32528926?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32528926?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32528926?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32528926?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32528926?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32528926?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32528926?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Building and Executing a Pipeline Graph with Data Fusion 2.5&quot;,&quot;lab_name&quot;:&quot;Building and Executing a Pipeline Graph with Data Fusion 2.5&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32528926' data-lab-billing-limit='0.0' data-lab-duration='9000' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:9000}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Building and Executing a Pipeline Graph with Data Fusion 2.5
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>2 hours 30 minutes</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32528926/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.4219'></div>
+
+</a><ql-button aria-label='Rate Lab' id='rate-lab-btn' label='Rate Lab' text></ql-button>
+</div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p>This tutorial shows you how to use the Wrangler and Data Pipeline features in Cloud Data Fusion to clean, transform, and process taxi trip data for further analysis.</p>
+<h3>What you learn</h3>
+<p>In this lab, you will:</p>
+<ul>
+<li>Connect Cloud Data Fusion to a couple of data sources</li>
+<li>Apply basic transformations</li>
+<li>Join two data sources</li>
+<li>Write data to a sink</li>
+</ul>
+<h2 id="step2">Introduction</h2>
+<p>Often times, data needs to go through a number of pre-processing steps before analysts can leverage the data to glean insights. For example, data types may need to be adjusted, anomalies removed, and vague identifiers may need to be converted to more meaningful entries. Cloud Data Fusion is a service for efficiently building ETL/ELT data pipelines. Cloud Data Fusion uses Cloud Dataproc cluster to perform all transforms in the pipeline.</p>
+<p>The use of Cloud Data Fusion will be exemplified in this tutorial by using a subset of the NYC TLC Taxi Trips dataset on BigQuery.</p>
+<h2 id="step3">Setup and requirements</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+
+<h3>Activate Google Cloud Shell</h3>
+<p>Google Cloud Shell is a virtual machine that is loaded with development tools. It offers a persistent 5GB home directory and runs on the Google Cloud.</p>
+<p>Google Cloud Shell provides command-line access to your Google Cloud resources.</p>
+<ol>
+<li>
+<p>In Cloud console, on the top right toolbar, click the Open Cloud Shell button.</p>
+<p><img alt="Highlighted Cloud Shell icon" src="https://cdn.qwiklabs.com/00tA48qOVOyHrSa1DA7LwccfwQ9Z%2BE6dkvQ1MYPHzhQ%3D"></p>
+</li>
+<li>
+<p>Click <strong>Continue</strong>.</p>
+</li>
+</ol>
+<p>It takes a few moments to provision and connect to the environment. When you are connected, you are already authenticated, and the project is set to your <em>PROJECT_ID</em>. For example:</p>
+<p><img alt="Project ID highlighted in the Cloud Shell Terminal" src="https://cdn.qwiklabs.com/hmMK0W41Txk%2B20bQyuDP9g60vCdBajIS%2B52iI2f4bYk%3D"></p>
+<p><strong>gcloud</strong> is the command-line tool for Google Cloud. It comes pre-installed on Cloud Shell and supports tab-completion.</p>
+<ul>
+<li>You can list the active account name with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud auth list
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - @.com (active)
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+Credentialed accounts:
+ - google1623327_student@qwiklabs.net
+ </ql-code-block>
+<ul>
+<li>You can list the project ID with this command:</li>
+</ul>
+<ql-code-block language="plaintext">
+gcloud config list project
+</ql-code-block>
+<p><strong>Output:</strong></p>
+<ql-code-block output="">
+[core]
+project = 
+</ql-code-block>
+<p><strong>Example output:</strong></p>
+<ql-code-block output="">
+[core]
+project = qwiklabs-gcp-44776a13dea667a6
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+  Full documentation of <strong>gcloud</strong> is available in the
+  <a href="https://cloud.google.com/sdk/gcloud" target="_blank">
+    gcloud CLI overview guide
+  </a>.
+</ql-infobox>
+
+<h3>Check project permissions</h3>
+<p>Before you begin your work on Google Cloud, you need to ensure that your project has the correct permissions within Identity and Access Management (IAM).</p>
+<ol>
+<li>
+<p>In the Google Cloud console, on the <strong>Navigation menu</strong> (<img alt="Navigation menu icon" src="https://cdn.qwiklabs.com/tkgw1TDgj4Q%2BYKQUW4jUFd0O5OEKlUMBRYbhlCrF0WY%3D">), select <strong>IAM &amp; Admin</strong> &gt; <strong>IAM</strong>.</p>
+</li>
+<li>
+<p>Confirm that the default compute Service Account <code>{project-number}-compute@developer.gserviceaccount.com</code> is present and has the <code>editor</code> role assigned. The account prefix is the project number, which you can find on <strong>Navigation menu &gt; Cloud Overview &gt; Dashboard</strong>.</p>
+</li>
+</ol>
+<p><img alt="Compute Engine default service account name and editor status highlighted on the Permissions tabbed page" src="https://cdn.qwiklabs.com/1nytD9OUuNUV9undyjUWeOS7LJmekReBDmkUjveCjcU%3D"></p>
+<ql-infobox><strong>Note: </strong>If the account is not present in IAM or does not have the <code>editor</code> role, follow the steps below to assign the required role.</ql-infobox>
+<ol>
+<li>In the Google Cloud console, on the <strong>Navigation menu</strong>, click <strong>Cloud Overview &gt; Dashboard</strong>.</li>
+<li>Copy the project number (e.g. <code>729328892908</code>).</li>
+<li>On the <strong>Navigation menu</strong>, select <strong>IAM &amp; Admin</strong> &gt; <strong>IAM</strong>.</li>
+<li>At the top of the roles table, below <strong>View by Principals</strong>, click <strong>Grant Access</strong>.</li>
+<li>For <strong>New principals</strong>, type:</li>
+</ol>
+<ql-code-block language="plaintext">
+  {project-number}-compute@developer.gserviceaccount.com
+</ql-code-block>
+<ol start="6">
+<li>Replace <code>{project-number}</code> with your project number.</li>
+<li>For <strong>Role</strong>, select <strong>Project</strong> (or Basic) &gt; <strong>Editor</strong>.</li>
+<li>Click <strong>Save</strong>.</li>
+</ol>
+
+<h2 id="step4">Task 1. Creating a Cloud Data Fusion instance</h2>
+<p>Thorough directions for creating a Cloud Data Fusion instance can be found in the <a href="https://cloud.google.com/data-fusion/docs/how-to/create-instance" target="_blank">Creating a Cloud Data Fusion instance Guide</a>. The essential steps are as follows:</p>
+<ol>
+<li>To ensure the training environment is properly configured you must first stop and restart the Cloud Data Fusion API. Run the command below in the Cloud Shell. It will take a few minutes to complete.</li>
+</ol>
+<ql-code-block language="plaintext">
+gcloud services disable datafusion.googleapis.com
+</ql-code-block>
+<p>Your output says that the operation finished successfully.</p>
+<p>Next, restart the connection to the Cloud Data Fusion API.</p>
+<ol start="2">
+<li>
+<p>In the Google Cloud Console, enter <strong>Cloud Data Fusion API</strong> in the top search bar. Click on the result for Cloud Data Fusion API.</p>
+</li>
+<li>
+<p>On the page that loads click <strong>Enable</strong>.</p>
+</li>
+<li>
+<p>When the API has been enabled again, the page will refresh and show the option to disable the API along with other details on the API usage and performance.</p>
+</li>
+<li>
+<p>On the <strong>Navigation menu</strong>, select <strong>Data Fusion</strong>.</p>
+</li>
+<li>
+<p>To create a Cloud Data Fusion instance, click <strong>Create an Instance</strong>.</p>
+</li>
+<li>
+<p>Enter a name for your instance.</p>
+</li>
+<li>
+<p>Select <strong>Basic</strong> for the Edition type.</p>
+</li>
+<li>
+<p>Under <strong>Authorization</strong> section, click <strong>Grant Permission</strong>.</p>
+</li>
+<li>
+<p>Leave all other fields as their defaults and click <strong>Create</strong>.</p>
+</li>
+</ol>
+<ql-infobox><strong>Note: </strong> Creation of the instance can take around 15 minutes.</ql-infobox>
+<ol start="11">
+<li>
+<p>Once the instance is created, you need one additional step to grant the service account associated with the instance permissions on your project. Navigate to the instance details page by clicking the instance name.</p>
+</li>
+<li>
+<p>Copy the service account to your clipboard.</p>
+</li>
+<li>
+<p>In the GCP Console navigate to the <strong>IAM &amp; Admin &gt; IAM</strong>.</p>
+</li>
+<li>
+<p>On the IAM Permissions page, click <strong>+Grant Access</strong> add the service account you copied earlier as a new principals and grant the <strong>Cloud Data Fusion API Service Agent</strong> role.</p>
+</li>
+</ol>
+<p><img alt="Add principles page" src="https://cdn.qwiklabs.com/AeB%2BfQ1et9b8jkAePkB%2FGuOvfPt70NLifW%2BfrdYhr9s%3D"></p>
+<ol start="15">
+<li>Click <strong>Save</strong>.</li>
+</ol>
+<h2 id="step5">Task 2. Loading the data</h2>
+<p>Once the Cloud Data Fusion instance is up and running, you can start using Cloud Data Fusion. However, before Cloud Data Fusion can start ingesting data you have to take some preliminary steps.</p>
+<ol>
+<li>In this example, Cloud Data Fusion will read data out of a storage bucket. In the <a href="https://cloud.google.com/shell/docs/starting-cloud-shell" target="_blank">cloud shell console</a> execute the following commands to create a new bucket and copy the relevant data into it:</li>
+</ol>
+<ql-code-block language="bash">
+export BUCKET=$GOOGLE_CLOUD_PROJECT
+gcloud storage buckets create gs://$BUCKET
+gcloud storage cp gs://cloud-training/OCBL017/ny-taxi-2018-sample.csv gs://$BUCKET
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>The created bucket name is your project id.</ql-infobox>
+<ol start="2">
+<li>In the command line, execute the following command to create a bucket for temporary storage items that Cloud data Fusion will create:</li>
+</ol>
+<ql-code-block language="bash">
+gcloud storage buckets create gs://$BUCKET-temp
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>The created bucket name is your project id followed by "-temp".</ql-infobox>
+<ol start="3">
+<li>Click the <strong>View Instance</strong> link on the Data Fusion instances page, or the details page of an instance. Click <strong>username</strong>. If prompted to take a tour of the service click on <strong>No, Thanks</strong>. You should now be in the Cloud Data Fusion UI.</li>
+</ol>
+<ql-infobox><strong>Note: </strong>You may need to reload or refresh the Cloud Fusion UI pages to allow prompt loading of the page.</ql-infobox>
+<ol start="4">
+<li>
+<p><strong>Wrangler</strong> is an interactive, visual tool that lets you see the effects of transformations on a small subset of your data before dispatching large, parallel-processing jobs on the entire dataset. On the Cloud Data Fusion UI, choose <strong>Wrangler</strong>. On the left side, there is a panel with the pre-configured connections to your data, including the Cloud Storage connection.</p>
+</li>
+<li>
+<p>Under <strong>GCS</strong>, select <strong>Cloud Storage Default</strong>.</p>
+</li>
+<li>
+<p>Click on the bucket corresponding to your project name.</p>
+</li>
+<li>
+<p>Select <strong>ny-taxi-2018-sample.csv</strong>. The data is loaded into the Wrangler screen in row/column form.</p>
+</li>
+<li>
+<p>In the <strong>Parsing Options</strong> window, set <strong>Use First Row as Header</strong> as <code>True</code>. The data splits into multiple columns.</p>
+</li>
+<li>
+<p>Click <strong>Confirm</strong>.</p>
+</li>
+</ol>
+<h2 id="step6">Task 3. Cleaning the data</h2>
+<p>Now, you will perform some transformations to parse and clean the taxi data.</p>
+<ol>
+<li>
+<p>Click the <strong>Down</strong> arrow next to the <code>trip_distance</code> column, select <strong>Change data type</strong> and then click on <strong>Float</strong>. Repeat for the <code>total_amount</code> column.</p>
+</li>
+<li>
+<p>Click the <strong>Down</strong> arrow next to the <code>pickup_location_id</code> column, select <strong>Change data type</strong> and then click on <strong>String</strong>.</p>
+</li>
+<li>
+<p>If you look at the data closely, you may find some anomalies, such as negative trip distances. You can avoid those negative values by filtering out in <strong>Wrangler</strong>. Click the <strong>Down</strong> arrow next to the <code>trip_distance</code> column and select <strong>Filter</strong>. Click if <strong>Custom condition</strong> and input <code>&gt;0.0</code></p>
+</li>
+</ol>
+<p><img alt="Wrangler screen" src="https://cdn.qwiklabs.com/cYYInqxsq5uw87nBhT8C5pQb1k5qRFYZ45WUepOiXV8%3D"></p>
+<ol start="4">
+<li>Click on <strong>Apply</strong>.</li>
+</ol>
+<h2 id="step7">Task 4. Creating the pipeline</h2>
+<p>Basic data cleansing is now complete and you've run transformations on a subset of your data. You can now create a batch pipeline to run transformations on all your data.</p>
+<p>Cloud Data Fusion translates your visually built pipeline into an Apache Spark or MapReduce program that executes transformations on an ephemeral Cloud Dataproc cluster in parallel. This enables you to easily execute complex transformations over vast quantities of data in a scalable, reliable manner, without having to wrestle with infrastructure and technology.</p>
+<ol>
+<li>
+<p>On the upper-right side of the Google Cloud Fusion UI, click <strong>Create a Pipeline</strong>.</p>
+</li>
+<li>
+<p>In the dialog that appears, select <strong>Batch pipeline</strong>.</p>
+</li>
+<li>
+<p>In the Data Pipelines UI, you will see a GCSFile source node connected to a Wrangler node. The Wrangler node contains all the transformations you applied in the Wrangler view captured as directive grammar. Hover over the Wrangler node and select <strong>Properties</strong>.</p>
+</li>
+</ol>
+<p><img alt="Wrangler node" src="https://cdn.qwiklabs.com/M%2B34mekVGUgqnkNftzZoIhi4sbvK1YKw5oI9WRpYTd8%3D">.</p>
+<ol start="4">
+<li>At this stage, you can apply more transformations by clicking the <strong>Wrangle</strong> button. Delete the <code>extra</code> column by pressing the red trashcan icon beside its name. Click <strong>Validate</strong> on the top right corner to check for any errors. To close the Wrangler tool click the <strong>X</strong> button in the top right corner.</li>
+</ol>
+<h2 id="step8">Task 5. Adding a data source</h2>
+<p>The taxi data contains several cryptic columns such as <code>pickup_location_id</code>, that aren't immediately transparent to an analyst. You are going to add a data source to the pipeline that maps the <code>pickup_location_id</code> column to a relevant location name. The mapping information will be stored in a BigQuery table.</p>
+<ol>
+<li>
+<p>In a separate tab, <a href="https://console.cloud.google.com/bigquery" target="_blank">open the BigQuery UI in the Cloud Console</a>.  Click <strong>Done</strong> on the 'Welcome to BigQuery in the Cloud Console' launch page.</p>
+</li>
+<li>
+<p>In the Explorer section of the BigQuery UI, click the three dots beside your GCP Project ID (it will start with qwiklabs).</p>
+</li>
+<li>
+<p>On the menu that appears click on <strong>Create dataset</strong>.</p>
+</li>
+<li>
+<p>In the <strong>Dataset ID</strong> field type in <code>trips</code>.</p>
+</li>
+<li>
+<p>Click on <strong>Create dataset</strong>.</p>
+</li>
+<li>
+<p>To create the desired table in the newly created dataset, navigate to <strong>More &gt; Query Settings</strong>. This process will ensure you can access your table from Cloud Data Fusion.</p>
+</li>
+<li>
+<p>Select the item for <strong>Set a destination table for query results</strong>. For <strong>Dataset</strong> input <code>trips</code> and select from the dropdown. For <strong>Table Id</strong> input <code>zone_id_mapping</code>. Click <strong>Save</strong>.</p>
+</li>
+</ol>
+<p><img alt="Query Settings page" src="https://cdn.qwiklabs.com/rhegfDHkOUFloUJZz8g%2BTJ5aA3PbeffYXJJFFG8qc6Y%3D"></p>
+<ol start="8">
+<li>Enter the following query in the Query Editor and then click <strong>Run</strong>:</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  zone_id,
+  zone_name,
+  borough
+FROM
+  `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom`
+</ql-code-block>
+<p>You can see that this table contains the mapping from <code>zone_id</code> to its name and borough.</p>
+<p><img alt="Table" src="https://cdn.qwiklabs.com/Ff%2BGGVD4CsjU395WA38amYovc0x5mTdEJTF4AlXmRfs%3D"></p>
+<ol start="9">
+<li>
+<p>Now, you will add a source in your pipeline to access this BigQuery table. Return to the tab where you have Cloud Data Fusion open, from the Plugin palette on the left, select <strong>BigQuery</strong> from the <strong>Source</strong> section. A BigQuery source node appears on the canvas with the two other nodes.</p>
+</li>
+<li>
+<p>Hover over the new BigQuery source node and click <strong>Properties</strong>.</p>
+</li>
+<li>
+<p>To configure the <strong>Reference Name</strong>, enter <code>zone_mapping</code>, which is used to identify this data source for lineage purposes.</p>
+</li>
+</ol>
+<p><img alt="Properties tabbed page" src="https://cdn.qwiklabs.com/3JNp%2B6mmo1VvOfX4N33Gyfc8%2BzoLonnV%2FTWYKm69nSE%3D"></p>
+<ol start="12">
+<li>The BigQuery <strong>Dataset</strong> and <strong>Table</strong> configurations are the Dataset and Table you setup in BigQuery a few steps earlier:  <code>trips</code> and <code>zone_id_mapping</code>. For <strong>Temporary Bucket Name</strong> input the name of your project followed by "-temp", which corresponds to the bucket you created in Task 2.</li>
+</ol>
+<p><img alt="Properties tabbed page" src="https://cdn.qwiklabs.com/3egVL8PRYdwAs%2F6kpWvGHm7uOkL5gKehJaYVAdJiwEk%3D"></p>
+<ol start="13">
+<li>
+<p>To populate the schema of this table from BigQuery, click <strong>Get Schema</strong>. The fields will appear on the right side of the wizard.</p>
+</li>
+<li>
+<p>Click <strong>Validate</strong> on the top right corner to check for any errors. To close the BigQuery Properties window click the <strong>X</strong> button in the top right corner.</p>
+</li>
+</ol>
+<h2 id="step9">Task 6. Joining two sources</h2>
+<p>Now you can join the two data sources—taxi trip data and zone names—to generate more meaningful output.</p>
+<ol>
+<li>
+<p>Under the <strong>Analytics</strong> section in the Plugin Palette, choose <strong>Joiner</strong>. A <strong>Joiner</strong> node appears on the canvas.</p>
+</li>
+<li>
+<p>To connect the Wrangler node and the BigQuery node to the Joiner node: Drag a connection arrow <strong>&gt;</strong> on the right edge of the source node and drop on the destination node.</p>
+</li>
+</ol>
+<p><img alt="Analytics section in the Plugin Palette" src="https://cdn.qwiklabs.com/ovpY%2FE1bGbSuMJd344vxuMUEtcBvnKm0zN1OE5FLF2M%3D"></p>
+<ol start="3">
+<li>To configure the <strong>Joiner</strong> node, which is similar to a SQL JOIN syntax:</li>
+</ol>
+<ul>
+<li>
+<p>Click <strong>Properties</strong> of <strong>Joiner</strong>.</p>
+</li>
+<li>
+<p>Leave the label as <strong>Joiner</strong>.</p>
+</li>
+<li>
+<p>Change the <strong>Join Type</strong> to <strong>Inner</strong></p>
+</li>
+<li>
+<p>Set the <strong>Join Condition</strong> to join the <code>pickup_location_id</code> column in the Wrangler node to the <code>zone_id</code> column in the BigQuery node.</p>
+<p><img alt="Join Condition section" src="https://cdn.qwiklabs.com/qa5AvfOAl1EoyHmdfBjd0%2FsO2YpbJn%2FpgVwNiqJPfuk%3D"></p>
+</li>
+<li>
+<p>To generate the schema of the resultant join, click <strong>Get Schema</strong>.</p>
+</li>
+<li>
+<p>In the <strong>Output Schema</strong> table on the right, remove the <code>zone_id</code> and <code>pickup_location_id</code> fields by hitting the red garbage can icon.</p>
+<p><img alt="Output Schema table" src="https://cdn.qwiklabs.com/VuuxddLNBe1z7aDDaaywmxJraiaad7sl3zSPqnDosj0%3D"></p>
+</li>
+<li>
+<p>Click <strong>Validate</strong> on the top right corner to check for any errors. Close the window by clicking the <strong>X</strong> button in the top right corner.</p>
+</li>
+</ul>
+<h2 id="step10">Task 7. Storing the output to BigQuery</h2>
+<p>You will store the result of the pipeline into a BigQuery table. Where you store your data is called a sink.</p>
+<ol>
+<li>
+<p>In the <strong>Sink</strong> section of the Plugin Palette, choose <strong>BigQuery</strong>.</p>
+</li>
+<li>
+<p>Connect the <strong>Joiner</strong> node to the <strong>BigQuery</strong> node.  Drag a connection arrow &gt; on the right edge of the source node and drop on the destination node.</p>
+</li>
+</ol>
+<p><img alt="Joiner node connected to the BigQuery node" src="https://cdn.qwiklabs.com/n%2FrkU3bcL67CU7GwooFyG9z0n2eOEgZbipNxtsPpOEo%3D"></p>
+<ol start="3">
+<li>
+<p>Open the <strong>BigQuery2</strong> node by hovering on it and then clicking <strong>Properties</strong>.  You will next configure the node as shown below.  You will use a configuration that's similar to the existing BigQuery source. Provide <code>bq_insert</code> for the <strong>Reference Name</strong> field and then use <code>trips</code> for the <strong>Dataset</strong> and the name of your project followed by "-temp" as <strong>Temporary Bucket Name</strong>.  You will write to a new table that will be created for this pipeline execution.  In <strong>Table</strong> field, enter <code>trips_pickup_name</code>.</p>
+</li>
+<li>
+<p>Click <strong>Validate</strong> on the top right corner to check for any errors. Close the window by clicking the <strong>X</strong> button in the top right corner.</p>
+</li>
+</ol>
+<h2 id="step11">Task 8. Deploying and running the pipeline</h2>
+<p>At this point you have created your first pipeline and can deploy and run the pipeline.</p>
+<ol>
+<li>Name your pipeline in the upper left corner of the Data Fusion UI and click <strong>Save</strong>.</li>
+</ol>
+<p><img alt="Data Fusion UI" src="https://cdn.qwiklabs.com/1%2FvmmYmsgOCoclkxsqdPzqobIHFxWqAUKzYkExa%2Fs9U%3D"></p>
+<ol start="2">
+<li>Now you will deploy the pipeline.  In the upper-right corner of the page, click <strong>Deploy</strong>.</li>
+</ol>
+<p><img alt="Data Fusion UI Deploy button" src="https://cdn.qwiklabs.com/iLxrHVUYPmqXuoWZA2e7ZzoCuzucJfdRSmsY5uXdxVM%3D"></p>
+<ol start="3">
+<li>On the next screen click <strong>Run</strong> to start processing data.</li>
+</ol>
+<p><img alt="MyPipeline page" src="https://cdn.qwiklabs.com/txgIHP8pwoBapCrD%2BAAtkEZSfeK6zS5eFA0PVJqTd48%3D"></p>
+<p>When you run a pipeline, Cloud Data Fusion provisions an ephemeral Cloud Dataproc cluster, runs the pipeline, and then tears down the cluster. This could take a few minutes. You can observe the status of the pipeline transition from <em>Provisioning</em> to <em>Starting</em> and from <em>Starting</em> to <em>Running</em> to <em>Succeeded</em> during this time.</p>
+<p><img alt="MyPipeline page" src="https://cdn.qwiklabs.com/cIyCuqPouqko8fGjs3PtNRzXQI%2F3QFfvib6k9BegReM%3D"></p>
+<ql-infobox><strong>Note:</strong> The pipeline transition may take 10-15 minutes to succeeded.</ql-infobox>
+<h2 id="step12">Task 9. Viewing the results</h2>
+<p>To view the results after the pipeline runs:</p>
+<ul>
+<li>
+<p>Return to the tab where you have BigQuery open. Run the query below to see the values in the <code>trips_pickup_name</code> table:</p>
+<ql-code-block language="sql">
+SELECT
+  *
+FROM
+  `trips.trips_pickup_name`
+</ql-code-block>
+<p>BQ RESULTS</p>
+<p><img alt="Query results table" src="https://cdn.qwiklabs.com/BaeqM5di7rmHwRDAzMH5xNeai%2FBp0gzzk%2B62r3RdxM0%3D"></p>
+</li>
+</ul>
+<h2 id="step13">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+
+
+
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Introduction</a></li><li><a href="#step3">Setup and requirements</a></li><li><a href="#step4">Task 1. Creating a Cloud Data Fusion instance</a></li><li><a href="#step5">Task 2. Loading the data</a></li><li><a href="#step6">Task 3. Cleaning the data</a></li><li><a href="#step7">Task 4. Creating the pipeline</a></li><li><a href="#step8">Task 5. Adding a data source</a></li><li><a href="#step9">Task 6. Joining two sources</a></li><li><a href="#step10">Task 7. Storing the output to BigQuery</a></li><li><a href="#step11">Task 8. Deploying and running the pipeline</a></li><li><a href="#step12">Task 9. Viewing the results</a></li><li><a href="#step13">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+This tutorial shows you how to use the Wrangler and Data Pipeline features in Cloud Data Fusion to clean, transform, and process taxi trip data for further analysis.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+150m access
+&middot;
+150m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/4032">https://googlecoursera.qwiklabs.com/catalog_lab/4032</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="edit_lab_review_35094259" action="/lab_reviews/35094259" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><input type="hidden" name="_method" value="patch" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='5' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='5' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="4032" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" value="2" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

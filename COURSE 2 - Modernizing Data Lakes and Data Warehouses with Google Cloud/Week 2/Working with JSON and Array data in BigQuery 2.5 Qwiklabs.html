@@ -1,0 +1,1802 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Working with JSON and Array data in BigQuery 2.5 | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-730738e6a42cf2d08765342db72a96e1c168e026.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-5bdf08e3db82244d1fd919ef04497683c2eb8f48.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-5be9380d7cac08f7e2dac9c53445a154bd807c47.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="WzcGd0tRNXYzl0p3/dgf0vRBIVAMceDSbBVkb1MpAEe+zz/8ez6nSm9BVQsUQaDQkUO9uNvMO/91I5cITRhmfg==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;program_announcements&quot;,&quot;canonical_domain_redirect&quot;,&quot;program_learning_assignment&quot;,&quot;barker&quot;,&quot;used_in&quot;,&quot;course_upgrade&quot;,&quot;community_forum&quot;,&quot;peer_assignment&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;teams&quot;,&quot;content_provider_admin&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='In this lab you will work with semi-structured data (ingesting JSON, Array data types) inside of BigQuery. You will practice loading, querying, troubleshooting, and unnesting various semi-structured datasets.' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Working with JSON and Array data in BigQuery 2.5 | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='In this lab you will work with semi-structured data (ingesting JSON, Array data types) inside of BigQuery. You will practice loading, querying, troubleshooting, and unnesting various semi-structured datasets.' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32528869?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32528869?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-29602dc272dc25b87d80aad082aeac190a74d2ab.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="909d26dc3878c4aa" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Working with JSON and Array data in BigQuery 2.5</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32528869?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32528869?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32528869?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32528869?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32528869?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32528869?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32528869?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32528869?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32528869?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32528869?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32528869?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32528869?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32528869?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32528869?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32528869?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32528869?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32528869?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32528869?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32528869?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<div class='lab-assessment__tab js-open-lab-assessment-panel'>
+<button class='js-lab-assessment-total-score'>
+—/25
+</button>
+</div>
+<div aria-labelledby='lab-assessment-checkpoint' class='lab-assessment__panel js-lab-assessment-panel' role='dialog'>
+<div class='lab-assessment__panel__header'>
+<h4 id='lab-assessment-checkpoint'>Checkpoints</h4>
+<ql-icon-button class='js-close-lab-assessment-panel' icon='arrow_forward' label='Close dialog'></ql-icon-button>
+</div>
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Create a new dataset and load JSON data into the table
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Create a new dataset and load JSON data into the table' step_no='1'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-1'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Creating arrays with ARRAY_AGG()
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Creating arrays with ARRAY_AGG()' step_no='2'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-2'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Querying datasets that already have ARRAYs
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Querying datasets that already have ARRAYs' step_no='3'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-3'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Explore a dataset with STRUCTs
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Explore a dataset with STRUCTs' step_no='4'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-4'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+<div class='lab-assessment__step'>
+<p class='lab-assessment__step__title' id='lab-assessment-step-title'>
+Practice with STRUCTs and ARRAYs
+</p>
+<div class='lab-assessment__step__action'>
+<ql-button class='js-show-run-step-button' description='Practice with STRUCTs and ARRAYs' step_no='5'>
+Check my progress
+</ql-button>
+<p class='lab-assessment__step__score'>
+<span class='js-assessment-step-score-5'>
+</span>
+/ 5
+</p>
+</div>
+</div>
+
+</div>
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Working with JSON and Array data in BigQuery 2.5&quot;,&quot;lab_name&quot;:&quot;Working with JSON and Array data in BigQuery 2.5&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32528869' data-lab-billing-limit='0.0' data-lab-duration='3600' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:3600}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Working with JSON and Array data in BigQuery 2.5
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>1 hour</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32528869/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.5075'></div>
+
+</a><ql-button aria-label='Rate Lab' id='rate-lab-btn' label='Rate Lab' text></ql-button>
+</div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p><a href="https://cloud.google.com/bigquery" target="_blank">BigQuery</a> is Google's fully managed, NoOps, low cost analytics database. With BigQuery you can query terabytes and terabytes of data without having any infrastructure to manage or needing a database administrator. BigQuery uses SQL and can take advantage of the pay-as-you-go model. BigQuery allows you to focus on analyzing data to find meaningful insights.</p>
+<p>This lab is an in-depth walkthrough of working with semi-structured data (ingesting JSON, Array data types) inside of BigQuery. Denormalizing your schema into a single table with nested and repeated fields can yield performance improvements, but the SQL syntax for working with array data can be tricky. You will practice loading, querying, troubleshooting, and unnesting various semi-structured datasets.</p>
+<h3>Objectives</h3>
+<p>In this lab, you learn about the following:</p>
+<ul>
+<li>
+<p>Loading semi-structured JSON into BigQuery</p>
+</li>
+<li>
+<p>Creating and querying arrays</p>
+</li>
+<li>
+<p>Creating and querying structs</p>
+</li>
+<li>
+<p>Querying nested and repeated fields</p>
+</li>
+</ul>
+<h2 id="step2">Set up and requirements</h2>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+<h3>Open BigQuery Console</h3>
+<ol>
+<li>In the Google Cloud Console, select <strong>Navigation menu</strong> &gt; <strong>BigQuery</strong>.</li>
+</ol>
+<p>The <strong>Welcome to BigQuery in the Cloud Console</strong> message box opens. This message box provides a link to the quickstart guide and lists UI updates.</p>
+<ol start="2">
+<li>Click <strong>Done</strong>.</li>
+</ol>
+<h2 id="step3">Task 1. Create a new dataset to store our tables</h2>
+<ol>
+<li>To create a dataset, click on the <strong>View actions</strong> icon next to your Project ID and then select <strong>Create dataset</strong>.</li>
+</ol>
+<p><img alt="BigQuery Console, View actions icon highlighted and Create dataset option highlighted" src="https://cdn.qwiklabs.com/QfuRPBdBzNzWT9HjIClCL5QgsIz5Lee%2FaaqPkxWFYNo%3D"></p>
+<ol start="2">
+<li>
+<p>Name the new dataset <strong>fruit_store</strong>. Leave the other options at their default values (Data Location, Default Table Expiration).</p>
+</li>
+<li>
+<p>Click <strong>Create dataset</strong>.</p>
+</li>
+</ol>
+<h2 id="step4">Task 2. Practice working with Arrays in SQL</h2>
+<p>Normally in SQL you will have a single value for each row like this list of fruits below:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Fruit</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>raspberry</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>blackberry</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>strawberry</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>4</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>cherry</p>
+</td>
+</tr>
+</table>
+<p>What if you wanted a list of fruit items for each person at the store? It could look something like this:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Fruit</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Person</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>raspberry</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>blackberry</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>strawberry</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>4</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>cherry</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>5</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>orange</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>frederick </p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>6</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>apple</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>frederick</p>
+</td>
+</tr>
+</table>
+<p>In traditional relational database SQL, you would look at the repetition of names and immediately think to split the above table into two separate tables: Fruit Items and People. That process is called <a href="https://en.wikipedia.org/wiki/Database_normalization" target="_blank">normalization</a> (going from one table to many). This is a common approach for transactional databases like mySQL.</p>
+<p>For data warehousing, data analysts often go the reverse direction (denormalization) and bring many separate tables into one large reporting table.</p>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"The table row size could be too large for traditional reporting databases",
+"Any changes to a value (like customer email) could impact many other rows (like all their orders)",
+"Data at differing levels of granularity could lead to reporting issues because less granular fields would be repeated.",
+"All of the above"
+]' stem="What are some potential issues if you stored all your data in one giant table?">
+</ql-multiple-choice-probe></p>
+<p>Now, you're going to learn a different approach that stores data at different levels of granularity all in one table using repeated fields:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Fruit (array)</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Person</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="4">
+<p>    1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>raspberry</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr><td colspan="1" rowspan="1">
+<p>blackberry</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1">
+<p>strawberry</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1">
+<p>cherry</p>
+</td></tr>
+<tr>
+<td colspan="1" rowspan="2">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>orange</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>frederick </p>
+</td>
+</tr>
+<tr><td colspan="1" rowspan="1">
+<p>apple</p>
+</td></tr>
+</table>
+<p>What looks strange about the previous table?</p>
+<ul>
+<li>It's only two rows.</li>
+<li>There are multiple field values for Fruit in a single row.</li>
+<li>The people are associated with all of the field values.</li>
+</ul>
+<p>What's the key insight? The <code>array</code> data type!</p>
+<p>An easier way to interpret the Fruit array:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Fruit (array)</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>Person</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>[raspberry, blackberry, strawberry, cherry]</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>sally</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>[orange, apple]</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>frederick </p>
+</td>
+</tr>
+</table>
+<p>Both of these tables are exactly the same. There are two key learnings here:</p>
+<ul>
+<li>An array is simply a list of items in brackets [ ]</li>
+<li>BigQuery visually displays arrays as <em>flattened</em>. It simply lists the value in the array vertically (note that all of those values still belong to a single row)</li>
+</ul>
+<p><strong>Try it yourself.</strong></p>
+<ol>
+<li>
+<p>Enter the following in the BigQuery Query Editor:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+['raspberry', 'blackberry', 'strawberry', 'cherry'] AS fruit_array
+</ql-code-block>
+<ol start="2">
+<li>
+<p>Click <strong>Run</strong>.</p>
+</li>
+<li>
+<p>Now try executing this one:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+['raspberry', 'blackberry', 'strawberry', 'cherry', 1234567] AS fruit_array
+</ql-code-block>
+<p>You should get an error that looks like the following:</p>
+<p><code>Error: Array elements of types {INT64, STRING} do not have a common supertype at [3:1]</code></p>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"Data in an array [ ] must all be the same type",
+"Data in an array cannot exceed 4 elements",
+"Data in an array must only be strings"
+]' shuffle="" stem="Why did we get this error?">
+</ql-multiple-choice-probe></p>
+<p>Arrays can only share one data type (all strings, all numbers).</p>
+<ol start="4">
+<li>
+<p>Here's the final table to query against:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT person, fruit_array, total_cost FROM `data-to-insights.advanced.fruit_store`;
+</ql-code-block>
+<ol start="5">
+<li>
+<p>Click <strong>Run</strong>.</p>
+</li>
+<li>
+<p>After viewing the results, click the <strong>JSON</strong> tab to view the nested structure of the results.</p>
+</li>
+</ol>
+<h3>Loading semi-structured JSON into BigQuery</h3>
+<p>What if you had a JSON file that you needed to ingest into BigQuery?</p>
+<ol>
+<li>Create a new table in the <code>fruit_store</code> dataset.</li>
+<li>To create a table, click on the <strong>View actions</strong> icon next to the <strong>fruit_store</strong> dataset and select <strong>Create Table</strong>.</li>
+</ol>
+<p><img alt="Highlighted View actions icon and Create table option" src="https://cdn.qwiklabs.com/hWGWd4F1FA2ncdu1s1l3N2v%2FyyWOxCLXlDOYxWx0EEE%3D"></p>
+<ol start="3">
+<li>
+<p>Add the following details for the table:</p>
+</li>
+</ol>
+<ul>
+<li>
+<p><strong>Source</strong>: Choose <strong>Google Cloud Storage</strong> in the <strong>Create table from</strong> dropdown.</p>
+</li>
+<li>
+<p><strong>Select file from GCS bucket</strong> (type or paste the following):  <code>data-insights-course/labs/optimizing-for-performance/shopping_cart.json</code></p>
+</li>
+<li>
+<p><strong>File format</strong>: JSONL (Newline delimited JSON)  {This will be auto-populated}</p>
+</li>
+<li>
+<p><strong>Schema</strong>: Check <strong>Auto detect</strong> (Schema and input parameters).</p>
+</li>
+</ul>
+<ol start="4">
+<li>
+<p>Call the new table "fruit_details".</p>
+</li>
+<li>
+<p>Click <strong>Create table</strong>.</p>
+</li>
+</ol>
+<p>In the schema, note that <code>fruit_array</code> is marked as REPEATED which means it's an array.</p>
+<p><strong>Recap</strong></p>
+<ul>
+<li>BigQuery natively supports arrays</li>
+<li>Array values must share a data type</li>
+<li>Arrays are called REPEATED fields in BigQuery</li>
+</ul>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="1">
+Create a new dataset and load JSON data into the table
+</ql-activity-tracking></p>
+<h2 id="step5">Task 3. Creating your own arrays with ARRAY_AGG()</h2>
+<p>Don't have arrays in your tables already? You can create them!</p>
+<ol>
+<li>
+<p><strong>Copy and Paste</strong> the below query to explore this public dataset:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  fullVisitorId,
+  date,
+  v2ProductName,
+  pageTitle
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+ORDER BY date
+</ql-code-block>
+<ol start="2">
+<li>Click <strong>Run</strong> and view the results.</li>
+</ol>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"111",
+"2",
+"70",
+"100"
+]' shuffle="" stem="How many rows are returned?">
+</ql-multiple-choice-probe></p>
+<ol start="3">
+<li>
+<p>Now, we will use the <code>ARRAY_AGG()</code> function to aggregate our string values into an array. Copy and paste the below query to explore this public dataset:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  fullVisitorId,
+  date,
+  ARRAY_AGG(v2ProductName) AS products_viewed,
+  ARRAY_AGG(pageTitle) AS pages_viewed
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+GROUP BY fullVisitorId, date
+ORDER BY date
+</ql-code-block>
+<ol start="4">
+<li>Click <strong>Run</strong> and view the results.</li>
+</ol>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"2 - one for each day",
+"63 - one for each day",
+"70 - one for each day",
+"100 - one for each day"
+]' shuffle="" stem="How many rows are returned?">
+</ql-multiple-choice-probe></p>
+<ol start="5">
+<li>
+<p>Next, we will use the <code>ARRAY_LENGTH()</code> function to count the number of pages and products that were viewed:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  fullVisitorId,
+  date,
+  ARRAY_AGG(v2ProductName) AS products_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(v2ProductName)) AS num_products_viewed,
+  ARRAY_AGG(pageTitle) AS pages_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(pageTitle)) AS num_pages_viewed
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+GROUP BY fullVisitorId, date
+ORDER BY date
+</ql-code-block>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"109",
+"8",
+"70",
+"101"
+]' shuffle="" stem="How many pages were visited by this user on 20170801?">
+</ql-multiple-choice-probe></p>
+<ol start="6">
+<li>
+<p>Next, let's deduplicate the pages and products so we can see how many unique products were viewed. We'll simply add <code>DISTINCT</code> to our <code>ARRAY_AGG()</code>:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  fullVisitorId,
+  date,
+  ARRAY_AGG(DISTINCT v2ProductName) AS products_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(DISTINCT v2ProductName)) AS distinct_products_viewed,
+  ARRAY_AGG(DISTINCT pageTitle) AS pages_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(DISTINCT pageTitle)) AS distinct_pages_viewed
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+GROUP BY fullVisitorId, date
+ORDER BY date
+</ql-code-block>
+<p><ql-multiple-choice-probe answerindex="1" optiontitles='[
+"109",
+"8",
+"70",
+"101"
+]' shuffle="" stem="How many DISTINCT pages were visited by this user on 20170801?">
+</ql-multiple-choice-probe></p>
+<p><strong>Recap</strong></p>
+<p>You can do some pretty useful things with arrays like:</p>
+<ul>
+<li>Finding the number of elements with <code>ARRAY_LENGTH(&lt;array&gt;)</code>
+</li>
+<li>Deduplicating elements with <code>ARRAY_AGG(DISTINCT &lt;field&gt;)</code>
+</li>
+<li>Ordering elements with <code>ARRAY_AGG(&lt;field&gt; ORDER BY &lt;field&gt;)</code>
+</li>
+<li>Limiting  <code>ARRAY_AGG(&lt;field&gt; LIMIT 5)</code>
+</li>
+</ul>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="2">
+Creating arrays with ARRAY_AGG()
+</ql-activity-tracking></p>
+<h2 id="step6">Task 4. Querying datasets that already have ARRAYs</h2>
+<p>The BigQuery Public Dataset for Google Analytics <code>bigquery-public-data.google_analytics_sample</code> has many more fields and rows than our course dataset <code>data-to-insights.ecommerce.all_sessions</code>. More importantly, it already stores field values like products, pages, and transactions natively as ARRAYs.</p>
+<ol>
+<li>
+<p><strong>Copy and Paste</strong> the below query to explore the available data and see if you can find fields with repeated values (arrays):</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  *
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`
+WHERE visitId = 1501570398
+</ql-code-block>
+<ol start="2">
+<li>
+<p><strong>Run</strong> the query.</p>
+</li>
+<li>
+<p><strong>Scroll right</strong> in the results until you see the <code>hits.product.v2ProductName</code> field (we will discuss the multiple field aliases shortly).</p>
+</li>
+</ol>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"The grayed out cells are visual placeholders to make it possible to show each item in an array type column on its own row within the context of a row in the result set",
+"BigQuery is still in the process of loading values for the grayed out cells",
+"The entire dataset has no data values for the grayed out cells"
+]' shuffle="" stem="You will notice a lot of seemingly 'empty' cells in the results as you scroll. These cells are grayed out and not marked as null. Why do you think that is?">
+</ql-multiple-choice-probe></p>
+<ol start="4">
+<li>
+<p>The amount of fields available in the Google Analytics schema can be overwhelming for our analysis. Let's try to query just the visit and page name fields like we did before:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  visitId,
+  hits.page.pageTitle
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`
+WHERE visitId = 1501570398
+</ql-code-block>
+<p>You will get an error:
+<code>Cannot access field product on a value with type ARRAY&gt; at [5:8]</code></p>
+<p>Before we can query REPEATED fields (arrays) normally, you must first break the arrays back into rows.</p>
+<p>For example, the array for <code>hits.page.pageTitle</code> is stored currently as a single row like:</p>
+<ql-code-block language="plaintext">
+['homepage','product page','checkout']
+</ql-code-block>
+<p>and we need it to be:</p>
+<ql-code-block language="plaintext">
+['homepage',
+'product page',
+'checkout']
+</ql-code-block>
+<p>How do we do that with SQL?</p>
+<ol start="5">
+<li>
+<p><strong>Answer:</strong> Use the UNNEST() function on your array field:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT DISTINCT
+  visitId,
+  h.page.pageTitle
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`,
+UNNEST(hits) AS h
+WHERE visitId = 1501570398
+LIMIT 10
+</ql-code-block>
+<p>We'll cover UNNEST() more in detail later but for now just know that:</p>
+<ul>
+<li>You need to UNNEST() arrays to bring the array elements back into rows</li>
+<li>UNNEST() always follows the table name in your FROM clause (think of it conceptually like a pre-joined table)</li>
+</ul>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="3">
+Querying datasets that already have ARRAYs
+</ql-activity-tracking></p>
+<h2 id="step7">Task 5. Introduction to STRUCTs</h2>
+<p>You may have wondered why the field alias <code>hit.page.pageTitle</code> looks like three fields in one separated by periods. Just as ARRAY values give you the flexibility to <em>go deep</em> into the granularity of your fields, another data type allows you to <em>go wide</em> in your schema by grouping related fields together. That SQL data type is the <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#struct-type" target="_blank">STRUCT</a> data type.</p>
+<p>The easiest way to think about a STRUCT is to consider it conceptually like a separate table that is already pre-joined into your main table.</p>
+<p>A STRUCT can have:</p>
+<ul>
+<li>One or many fields in it</li>
+<li>The same or different data types for each field</li>
+<li>Its own alias</li>
+</ul>
+<p>Sounds just like a table right?</p>
+<h3>Let's explore a dataset with STRUCTs</h3>
+<ol>
+<li>
+<p>Under <strong>Explorer</strong> find the <strong>bigquery-public-data</strong> dataset.</p>
+</li>
+<li>
+<p>If it's not present already, click <strong>ADD DATA &gt; Pin a project</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Enter project name</strong>.</p>
+</li>
+<li>
+<p>Enter <code>bigquery-public-data</code> and click <strong>Pin</strong>.</p>
+</li>
+<li>
+<p>Click <code>bigquery-public-data</code> in the pinned project list to expand it.</p>
+</li>
+<li>
+<p>Find and open <strong>google_analytics_sample</strong>.</p>
+</li>
+<li>
+<p>Click the <strong>ga_sessions</strong> table.</p>
+</li>
+<li>
+<p>Start scrolling through the schema and answer the following question by using the find feature of your browser (i.e. CTRL + F).  <strong>Tip:  Expand all columns before you begin counting.</strong></p>
+</li>
+</ol>
+<p><ql-multiple-choice-probe answerindex="3" optiontitles='[
+"1",
+"5",
+"11",
+"32"
+]' stem="In a BigQuery schema, a STRUCT field is noted as a RECORD Type. Search for RECORD in the Google Analytics schema. How many STRUCTs (the RECORD Type columns) are present in this dataset?">
+</ql-multiple-choice-probe></p>
+<p><ql-multiple-choice-probe answerindex="4" optiontitles='[
+"Totals",
+"TrafficSource",
+"trafficSource.adwordsClickInfo",
+"device",
+"All of the above"
+]' stem="What are the names of some of the STRUCT (RECORD Type) fields?">
+</ql-multiple-choice-probe></p>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"A STRUCT can have another STRUCT as one of its fields (you can nest STRUCTs)",
+"They are not STRUCTs",
+"Because they are all ARRAYs",
+"This is an invalid data type"
+]' stem="How can both TrafficSource and trafficSource.adwordsClickInfo both be STRUCTs?">
+</ql-multiple-choice-probe></p>
+<p><ql-multiple-choice-probe answerindex="2" optiontitles='[
+"1",
+"5",
+"11",
+"32"
+]' stem="In a BigQuery schema, an ARRAY field is noted as a REPEATED Mode. Search for REPEATED in the Google Analytics schema. How many ARRAYs are present in this dataset?">
+</ql-multiple-choice-probe></p>
+<ol start="9">
+<li>
+<p>As you can imagine, there is an incredible amount of website session data stored for a modern ecommerce website. The main advantage of having 32 STRUCTs in a single table is it allows you to run queries like this one without having to do any JOINs:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  visitId,
+  totals.*,
+  device.*
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`
+WHERE visitId = 1501570398
+LIMIT 10
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>The `.*` syntax tells BigQuery to return all fields for that STRUCT (much like it would if totals.* was a separate table we joined against).</ql-infobox>
+<p>Storing your large reporting tables as STRUCTs (pre-joined "tables") and ARRAYs (deep granularity) allows you to:</p>
+<ul>
+<li>Gain significant performance advantages by avoiding 32 table JOINs</li>
+<li>Get granular data from ARRAYs when you need it but not be punished if you don't (BigQuery stores each column individually on disk)</li>
+<li>Have all the business context in one table as opposed to worrying about JOIN keys and which tables have the data you need</li>
+</ul>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="4">
+Explore a dataset with STRUCTs
+</ql-activity-tracking></p>
+<h2 id="step8">Task 6. Practice with STRUCTs and ARRAYs</h2>
+<p>The next dataset will be lap times of runners around the track. Each lap will be called a "split".</p>
+<p><img alt="Runners on a track" src="https://cdn.qwiklabs.com/7SKxQcYHcPl4LFyErCHfGcASWgeQSpH%2FHbtJcGyfAEY%3D"></p>
+<ol>
+<li>
+<p>With this query, try out the STRUCT syntax and note the different field types within the struct container:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT STRUCT("Rudisha" as name, 23.4 as split) as runner
+</ql-code-block>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>runner.name</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>runner.split</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rudisha</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>23.4</p>
+</td>
+</tr>
+</table>
+<p>What do you notice about the field aliases? Since there are fields nested within the struct (name and split are a subset of runner) you end up with a dot notation.</p>
+<p>What if the runner has multiple split times for a single race (like time per lap)?</p>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"Store each split time as an element in an ARRAY of splits",
+"Store each split time in a separate table called race_splits",
+"Store each split time in a separate STRING field with STRING_AGG()",
+"Use a SQL UNION to join the race and split details"
+]' shuffle="" stem="How could you have multiple split times within a single record? Hint: the splits all have the same numeric datatype.">
+</ql-multiple-choice-probe></p>
+<ol start="2">
+<li>
+<p>With an array of course! Run the below query to confirm:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT STRUCT("Rudisha" as name, [23.4, 26.3, 26.4, 26.1] as splits) AS runner
+</ql-code-block>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>runner.name</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>runner.splits</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="4">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="4">
+<p>Rudisha</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>23.4</p>
+</td>
+</tr>
+<tr><td colspan="1" rowspan="1">
+<p>26.3</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1">
+<p>26.4</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1">
+<p>26.1</p>
+</td></tr>
+</table>
+<p>To recap:</p>
+<ul>
+<li>
+<p>Structs are containers that can have multiple field names and data types nested inside.</p>
+</li>
+<li>
+<p>Arrays can be one of the field types inside of a Struct (as shown above with the splits field).</p>
+</li>
+</ul>
+<h3>Practice ingesting JSON data</h3>
+<ol>
+<li>
+<p>Create a new dataset titled <strong>racing</strong>.</p>
+</li>
+<li>
+<p>Create a new table titled <strong>race_results</strong>.</p>
+</li>
+<li>
+<p>Ingest this Google Cloud Storage JSON file:</p>
+</li>
+</ol>
+<ql-code-block language="bash">
+data-insights-course/labs/optimizing-for-performance/race_results.json
+</ql-code-block>
+<ul>
+<li>
+<p><strong>Source</strong>: Google Cloud Storage under <strong>Create table from</strong> dropdown.</p>
+</li>
+<li>
+<p><strong>Select file from GCS bucket</strong>:  <code>data-insights-course/labs/optimizing-for-performance/race_results.json</code></p>
+</li>
+<li>
+<p><strong>File format</strong>: JSONL (Newline delimited JSON)</p>
+</li>
+<li>
+<p>In <strong>Schema</strong>, move the <strong>Edit as text</strong> slider and add the following:</p>
+</li>
+</ul>
+<ql-code-block language="bash">
+[
+    {
+        "name": "race",
+        "type": "STRING",
+        "mode": "NULLABLE"
+    },
+    {
+        "name": "participants",
+        "type": "RECORD",
+        "mode": "REPEATED",
+        "fields": [
+            {
+                "name": "name",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "splits",
+                "type": "FLOAT",
+                "mode": "REPEATED"
+            }
+        ]
+    }
+]
+</ql-code-block>
+<ol start="4">
+<li>
+<p>Click <strong>Create table</strong>.</p>
+</li>
+<li>
+<p>After the load job is successful, preview the schema for the newly created table:</p>
+</li>
+</ol>
+<p><img alt="Table schema page" src="https://cdn.qwiklabs.com/bqkv0FfzSOpNUcUAS7S8M2rGoMfwhcK0hPQrgjfR7p8%3D"></p>
+<p>Which field is the STRUCT? How do you know?</p>
+<p>The <strong>participants</strong> field is the STRUCT because it is of type RECORD.</p>
+<p>Which field is the ARRAY?</p>
+<p>The <code>participants.splits</code> field is an array of floats inside of the parent <code>participants</code> struct. It has a REPEATED Mode which indicates an array. Values of that array are called nested values since they are multiple values inside of a single field.</p>
+<h3>Practice querying nested and repeated fields</h3>
+<ol>
+<li>
+<p>Let's see all of our racers for the 800 Meter race:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT * FROM racing.race_results
+</ql-code-block>
+<p>How many rows were returned?</p>
+<p><strong>Answer:</strong> 1</p>
+<p><img alt="Results table" src="https://cdn.qwiklabs.com/8ygOJAxnxJxkoRxOSBabLh0T7%2BIwx%2FaE%2BSK%2F46cYexg%3D"></p>
+<p>What if you wanted to list the name of each runner and the type of race?</p>
+<ol start="2">
+<li>
+<p>Run the below schema and see what happens:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT race, participants.name
+FROM racing.race_results
+</ql-code-block>
+<p><code>Error: Cannot access field name on a value with type ARRAY\&lt;STRUCT\&lt;name STRING, splits ARRAY\&lt;FLOAT64\&gt;&gt;&gt;&gt; at [1:21]</code></p>
+<p>Much like forgetting to GROUP BY when you use aggregation functions, here there are two different levels of granularity. One row for the race and three rows for the participants names. So how do you change this:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>race</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>participants.name</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rudisha</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>???</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Makhloufi</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>???</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Murphy</p>
+</td>
+</tr>
+</table>
+<p>...to this:</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>race</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>participants.name</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rudisha</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Makhloufi</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Murphy</p>
+</td>
+</tr>
+</table>
+<p>In traditional relational SQL, if you had a races table and a participants table what would you do to get information from both tables? You would JOIN them together. Here the participant STRUCT (which is conceptually very similar to a table) is already part of your races table but is not yet correlated correctly with your non-STRUCT field "race".</p>
+<p>Can you think of what two word SQL command you would use to correlate the 800M race with each of the racers in the first table?</p>
+<p><strong>Answer:</strong> CROSS JOIN</p>
+<p>Great!</p>
+<ol start="3">
+<li>
+<p>Now try running this:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT race, participants.name
+FROM racing.race_results
+CROSS JOIN
+participants  # this is the STRUCT (it's like a table within a table)
+</ql-code-block>
+<p><code>Error: Table name "participants" cannot be resolved: dataset name is missing</code>.</p>
+<p>Even though the participants STRUCT is like a table, it is still technically a field in the <code>racing.race_results</code> table.</p>
+<ol start="4">
+<li>
+<p>Add the dataset name to the query:</p>
+</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT race, participants.name
+FROM racing.race_results
+CROSS JOIN
+race_results.participants # full STRUCT name
+</ql-code-block>
+<ol start="5">
+<li>Click <strong>Run</strong>.</li>
+</ol>
+<p>Wow! You've successfully listed all of the racers for each race!</p>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>race</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>name</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rudisha</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Makhloufi</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>3</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Murphy</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>4</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Bosse</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>5</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rotich</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>6</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Lewandowski</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>7</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Kipketer</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>8</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>800M</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Berian</p>
+</td>
+</tr>
+</table>
+<p>You can simplify the last query by:</p>
+<ul>
+<li>Adding an alias for the original table</li>
+<li>Replacing the words "CROSS JOIN" with a comma (a comma implicitly cross joins)</li>
+</ul>
+<p>This will give you the same query result:</p>
+<ql-code-block language="sql">
+#standardSQL
+SELECT race, participants.name
+FROM racing.race_results AS r, r.participants
+</ql-code-block>
+<p>If you have more than one race type (800M, 100M, 200M), wouldn't a CROSS JOIN just associate every racer name with every possible race like a cartesian product?</p>
+<p><strong>Answer:</strong> No. This is a <em>correlated</em> cross join which only unpacks the elements associated with a single row. For a greater discussion, see  <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/arrays#flattening-arrays" target="_blank">working with ARRAYs and STRUCTs</a>.</p>
+<p>Click <em>Check my progress</em> to verify the objective.
+<ql-activity-tracking step="5">
+Practice with STRUCTs and ARRAYs
+</ql-activity-tracking></p>
+<p>Recap of STRUCTs:</p>
+<ul>
+<li>
+<p>A SQL  <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#struct-type" target="_blank">STRUCT</a> is simply a container of other data fields which can be of different data types. The word struct means data structure. Recall the example from earlier:</p>
+</li>
+<li>
+<p>__<code>STRUCT(</code>__<code>"Rudisha" as name, [23.4, 26.3, 26.4, 26.1] as splits</code>__<code>)</code>__<code>AS runner</code></p>
+</li>
+<li>
+<p>STRUCTs are given an alias (like runner above) and can conceptually be thought of as a table inside of your main table.</p>
+</li>
+<li>
+<p>STRUCTs (and ARRAYs) must be unpacked before you can operate over their elements. Wrap an UNNEST() around the name of the struct itself or the struct field that is an array in order to unpack and flatten it.</p>
+</li>
+</ul>
+<h2 id="step9">Task 7. Lab question: STRUCT()</h2>
+<p>Answer the below questions using the <code>racing.race_results</code> table you created previously.</p>
+<p><strong>Task:</strong> Write a query to COUNT how many racers were there in total.</p>
+<ul>
+<li>
+<p>To start, use the below partially written query:</p>
+</li>
+</ul>
+<ql-code-block language="sql">
+#standardSQL
+SELECT COUNT(participants.name) AS racer_count
+FROM racing.race_results
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>Remember you will need to cross join in your struct name as an additional data source after the FROM.</ql-infobox>
+<p>Possible solution:</p>
+<ql-code-block language="sql">
+#standardSQL
+SELECT COUNT(p.name) AS racer_count
+FROM racing.race_results AS r, UNNEST(r.participants) AS p
+</ql-code-block>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>racer_count</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>8</p>
+</td>
+</tr>
+</table>
+<p><strong>Answer:</strong> There were 8 racers who ran the race.</p>
+<h2 id="step10">Task 8. Lab question: Unpacking ARRAYs with UNNEST( )</h2>
+<p>Write a query that will list the total race time for racers whose names begin with R. Order the results with the fastest total time first. Use the UNNEST() operator and start with the partially written query below.</p>
+<ul>
+<li>
+<p>Complete the query:</p>
+</li>
+</ul>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  p.name,
+  SUM(split_times) as total_race_time
+FROM racing.race_results AS r
+, r.participants AS p
+, p.splits AS split_times
+WHERE
+GROUP BY
+ORDER BY
+;
+</ql-code-block>
+<ql-infobox><strong>Note: </strong>
+<li>You will need to unpack both the struct and the array within the struct as data sources after your FROM clause.</li>
+<li>Be sure to use aliases where appropriate.</li>
+</ql-infobox>
+<p>Possible solution:</p>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  p.name,
+  SUM(split_times) as total_race_time
+FROM racing.race_results AS r
+, UNNEST(r.participants) AS p
+, UNNEST(p.splits) AS split_times
+WHERE p.name LIKE 'R%'
+GROUP BY p.name
+ORDER BY total_race_time ASC;
+</ql-code-block>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>name</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>total_race_time</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rudisha</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>102.19999999999999</p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>2</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Rotich</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>103.6</p>
+</td>
+</tr>
+</table>
+<h2 id="step11">Task 9. Lab question: Filtering within ARRAY values</h2>
+<p>You happened to see that the fastest lap time recorded for the 800 M race was 23.2 seconds, but you did not see which runner ran that particular lap. Create a query that returns that result.</p>
+<ul>
+<li>
+<p><strong>Task:</strong> Complete the partially written query:</p>
+</li>
+</ul>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  p.name,
+  split_time
+FROM racing.race_results AS r
+, r.participants AS p
+, p.splits AS split_time
+WHERE split_time = ;
+</ql-code-block>
+<p>Possible solution:</p>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  p.name,
+  split_time
+FROM racing.race_results AS r
+, UNNEST(r.participants) AS p
+, UNNEST(p.splits) AS split_time
+WHERE split_time = 23.2;
+</ql-code-block>
+<table>
+<tr>
+<td colspan="1" rowspan="1">
+<p><strong>Row</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>name</strong></p>
+</td>
+<td colspan="1" rowspan="1">
+<p><strong>split_time</strong></p>
+</td>
+</tr>
+<tr>
+<td colspan="1" rowspan="1">
+<p>1</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>Kipketer</p>
+</td>
+<td colspan="1" rowspan="1">
+<p>23.2</p>
+</td>
+</tr>
+</table>
+<h2 id="step12">Congratulations!</h2>
+<p>You've successfully ingested JSON datasets, created ARRAYs and STRUCTs, and unnested semi-structured data for insights.</p>
+<h3>Next steps / Learn more</h3>
+<p>For additional reading, refer to  <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/arrays" target="_blank">Working with Arrays</a>.</p>
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Set up and requirements</a></li><li><a href="#step3">Task 1. Create a new dataset to store our tables</a></li><li><a href="#step4">Task 2. Practice working with Arrays in SQL</a></li><li><a href="#step5">Task 3. Creating your own arrays with ARRAY_AGG()</a></li><li><a href="#step6">Task 4. Querying datasets that already have ARRAYs</a></li><li><a href="#step7">Task 5. Introduction to STRUCTs</a></li><li><a href="#step8">Task 6. Practice with STRUCTs and ARRAYs</a></li><li><a href="#step9">Task 7. Lab question: STRUCT()</a></li><li><a href="#step10">Task 8. Lab question: Unpacking ARRAYs with UNNEST( )</a></li><li><a href="#step11">Task 9. Lab question: Filtering within ARRAY values</a></li><li><a href="#step12">Congratulations!</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+In this lab you will work with semi-structured data (ingesting JSON, Array data types) inside of BigQuery. You will practice loading, querying, troubleshooting, and unnesting various semi-structured datasets.
+</p>
+<p>
+This lab is included in the quest
+<a href="/quests/269">BigQuery Foundations Quest</a>.
+If you complete this lab you&#39;ll receive credit for it when you enroll in this quest.
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+60m access
+&middot;
+60m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>fundamental</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/4029">https://googlecoursera.qwiklabs.com/catalog_lab/4029</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="edit_lab_review_35075426" action="/lab_reviews/35075426" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><input type="hidden" name="_method" value="patch" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='5' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='5' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="4029" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" value="2" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,1442 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title>Predicting Visitor Purchases with BigQuery ML | Qwiklabs</title>
+<meta name="action-cable-url" content="/cable" />
+<script>
+//<![CDATA[
+window.gon={};gon.deployment="googlecoursera-run";
+//]]>
+</script>
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer',"GTM-5XSKHDX");
+</script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/polyfills/webcomponents-loader-b1b28b59480cca2ab0c23485f64ba2ec8893bdc9.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/vendor-730738e6a42cf2d08765342db72a96e1c168e026.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/application-5bdf08e3db82244d1fd919ef04497683c2eb8f48.js"></script>
+<script src="https://cdn.qwiklabs.com/assets/hallofmirrors/hallofmirrors-5be9380d7cac08f7e2dac9c53445a154bd807c47.js"></script>
+<script id='ze-snippet' src='https://static.zdassets.com/ekr/snippet.js?key=511e4158-0aec-4e3c-b2e6-4daa1769f51e'></script>
+
+
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="OT8Dw3BVOdqeoRGsDjDzX4zSKLzUVuYX2DfsNpZTmPmq8+MgIseHm/iqdt2Djuz521GLL7uFCjz4zSMM3V+V7w==" />
+<meta content='width=device-width, initial-scale=1.0, user-scalable=yes' name='viewport'>
+<meta content='1rRsY0INj8RvwB5EF5pwdxt2A2P9aDgAlsICaJ0d5w0' name='google-site-verification'>
+<meta content='#3681E4' property='msapplication-TileColor'>
+<meta content='/favicon-144.png' property='msapplication-TileImage'>
+<meta content='[{&quot;id&quot;:&quot;recaptcha_experiment&quot;,&quot;optimize_id&quot;:&quot;dpViOcLkT3qS4TvL2mRojA&quot;,&quot;title&quot;:&quot;No Recaptcha shown for trusted users&quot;,&quot;variant_index&quot;:0,&quot;variant&quot;:&quot;original&quot;}]' name='active-experiments'>
+<meta content='{&quot;userId&quot;:12197799,&quot;experimentIds&quot;:[&quot;search_updates&quot;,&quot;organization_announcements&quot;,&quot;organization_learning_plans&quot;,&quot;chat_off_for_signed_out_users&quot;,&quot;alexandria_show_bundle_errors&quot;,&quot;program_announcements&quot;,&quot;canonical_domain_redirect&quot;,&quot;program_learning_assignment&quot;,&quot;barker&quot;,&quot;used_in&quot;,&quot;course_upgrade&quot;,&quot;community_forum&quot;,&quot;peer_assignment&quot;,&quot;enforce_codebuild_verdicts&quot;,&quot;show_annual_purchase_now&quot;,&quot;oauth_risc_shutoff&quot;,&quot;teams&quot;,&quot;content_provider_admin&quot;]}' name='help-api-product-data'>
+<meta content='{&quot;groupIds&quot;:[&quot;non_suadmins&quot;,&quot;students&quot;,&quot;non_organization&quot;,&quot;non_program&quot;]}' name='help-api-custom-data'>
+<meta content='Want to build ML models with just SQL? Learn how with BigQuery ML on this Google Analytics ecommerce dataset' name='description'>
+<meta content='Qwiklabs' name='author'>
+<meta content='Predicting Visitor Purchases with BigQuery ML | Qwiklabs' property='og:title'>
+<meta content='website' property='og:type'>
+<meta content='/favicon-144.png' property='og:image'>
+<meta content='Qwiklabs' property='og:site_name'>
+<meta content='Want to build ML models with just SQL? Learn how with BigQuery ML on this Google Analytics ecommerce dataset' property='og:description'>
+<meta content='/qwiklabs_logo_900x887.png' property='og:logo' size='900x887'>
+<meta content='/qwiklabs_logo_994x187.png' property='og:logo' size='994x187'>
+
+
+<meta property="og:url" content="https://googlecoursera.qwiklabs.com/focuses/32528812?parent=lti_session" /><link href="https://googlecoursera.qwiklabs.com/focuses/32528812?parent=lti_session" rel="canonical" />
+<link color='#3681E4' href='/favicon-svg.svg' rel='mask-icon'>
+<link href='/favicon-180.png' rel='apple-touch-icon-precomposed'>
+<link href='/favicon-32.png' rel='shortcut icon' type='image/x-icon'>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oswald:400|Roboto+Mono:400,700|Roboto:300,400,500,700|Google+Sans:300,400,500,700|Google+Sans+Display:400|Material+Icons|Google+Material+Icons|Google+Sans+Text:400,500,700" media="screen" />
+
+<link rel="stylesheet" href="https://cdn.qwiklabs.com/assets/application-29602dc272dc25b87d80aad082aeac190a74d2ab.css" media="all" />
+<link rel="stylesheet" href="https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.css" media="screen" />
+
+
+<style>
+  :root {
+    --primary-text-on-surface-color: #1a73e8;
+    --primary-text-on-surface-color-dark: #1568d6;
+    --primary-text-on-surface-color-darker: #135ec1;
+    --primary-text-on-surface-color-darkest: #1154ac;
+    --primary-surface-color: #1a73e8;
+    --primary-surface-color-rgb: 26,115,232;
+    --primary-surface-color-light: #d1e3fa;
+    --primary-surface-color-lightest: #e8f1fd;
+    --text-on-primary-color: #ffffff;
+    --accent-text-on-surface-color: #f29900;
+    --accent-surface-color: #f9ab00;
+    --accent-surface-color-rgb: 249,171,0;
+    --accent-surface-color-light: #ffefcc;
+    --text-on-accent-color: #202124;
+  }
+</style>
+
+
+
+</head>
+<body class='lab-show l-full no-nav application-new focuses focuses-show lab-show l-full no-nav '>
+<div class='header-container'>
+<div class='header'>
+<ql-toolbar jumpEnabled>
+<div class='header__title' slot='title'>
+<ql-icon-button label="Back" href="https://www.coursera.org/" id="c9cd1b1fb00abbeb" target="_self" tip="Back">arrow_back</ql-icon-button>
+<h1 class='ql-title-medium'>Predicting Visitor Purchases with BigQuery ML</h1>
+</div>
+<div class='header__actions' slot='action'>
+<ql-icon-button id='control-panel-target' style='display: none;'>
+dashboard
+</ql-icon-button>
+<ql-menu for='control-panel-target' id='control-panel-menu'></ql-menu>
+<ql-icon-button class='mobile-hide' icon='help_outline' id='help-menu-button' label='Open help menu' tip='Help'></ql-icon-button>
+<ql-menu for='help-menu-button' id='help-menu'>
+<ql-menu-item data-analytics-action='opened_help' data-analytics-label='lab' label='Help Center' onclick='hallofmirrors.helpService.startHelp({&quot;productData&quot;:{&quot;userId&quot;:12197799},&quot;context&quot;:&quot;lab&quot;})'></ql-menu-item>
+<ql-menu-item href='mailto:support@qwiklabs.com' label='Email support'></ql-menu-item>
+<ql-menu-item label='Chat support' onClick='ql.chat.open()'></ql-menu-item>
+</ql-menu>
+
+<ql-icon-button class='mobile-hide' icon='language' id='language' label='Select your language preference' tip='Language'></ql-icon-button>
+<ql-menu for='language'>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ar' href='/focuses/32528812?locale=ar&amp;parent=lti_session' label='العربية‬‎' lang='ar'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='de' href='/focuses/32528812?locale=de&amp;parent=lti_session' label='Deutsch' lang='de'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='en' href='/focuses/32528812?locale=en&amp;parent=lti_session' label='English' lang='en'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='es' href='/focuses/32528812?locale=es&amp;parent=lti_session' label='español (Latinoamérica)' lang='es'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr' href='/focuses/32528812?locale=fr&amp;parent=lti_session' label='français' lang='fr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='fr_CA' href='/focuses/32528812?locale=fr_CA&amp;parent=lti_session' label='français (Canada)' lang='fr-CA'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='he' href='/focuses/32528812?locale=he&amp;parent=lti_session' label='עברית' lang='he'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='id' href='/focuses/32528812?locale=id&amp;parent=lti_session' label='bahasa Indonesia' lang='id'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='it' href='/focuses/32528812?locale=it&amp;parent=lti_session' label='Italiano' lang='it'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ja' href='/focuses/32528812?locale=ja&amp;parent=lti_session' label='日本語' lang='ja'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ko' href='/focuses/32528812?locale=ko&amp;parent=lti_session' label='한국어' lang='ko'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pl' href='/focuses/32528812?locale=pl&amp;parent=lti_session' label='Polski' lang='pl'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_BR' href='/focuses/32528812?locale=pt_BR&amp;parent=lti_session' label='português (Brasil)' lang='pt-BR'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='pt_PT' href='/focuses/32528812?locale=pt_PT&amp;parent=lti_session' label='português (Portugal)' lang='pt-PT'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='ru' href='/focuses/32528812?locale=ru&amp;parent=lti_session' label='русский' lang='ru'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='tr' href='/focuses/32528812?locale=tr&amp;parent=lti_session' label='Türkçe' lang='tr'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='uk' href='/focuses/32528812?locale=uk&amp;parent=lti_session' label='український' lang='uk'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh' href='/focuses/32528812?locale=zh&amp;parent=lti_session' label='简体中文' lang='zh'></ql-menu-item>
+<ql-menu-item data-analytics-action='changed_locale' data-analytics-label='zh_TW' href='/focuses/32528812?locale=zh_TW&amp;parent=lti_session' label='繁體中文' lang='zh-TW'></ql-menu-item>
+</ql-menu>
+
+
+<ql-icon-button id='my_account' label='My account' tip='My account'>
+<ql-avatar src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+</ql-icon-button>
+<ql-menu for='my_account' id='my_account_menu' style='max-height: 640px'>
+<div class='my-account-menu'>
+<ql-avatar class='l-mtl l-mbl' size='120' src='https://lh3.googleusercontent.com/a/ACg8ocI6s7UhNvX_oCOJMPhLJPmqhqIgwu_5AK0t7wpjF-5jmQo=s320-c'></ql-avatar>
+<div class='my-account-menu__user-info l-mbl'>
+<h4 class='ql-title-medium'>Justin Ho</h4>
+<p class='ql-body-medium text--light'>cliffdove@gmail.com</p>
+<p class='ql-body-medium text--light'>
+</p>
+<a class="text--green ql-title-small" href="/my_account/payments"><ql-chip positive>
+0 Credits
+</ql-chip>
+</a></div>
+<div class='buttons l-mbl'>
+<a class="button button--hairline" id="settings" href="/my_account/profile">Settings</a>
+</div>
+<hr>
+<ql-button data-analytics-action='clicked_sign_out' href='/users/sign_out' method='delete'>
+Sign Out
+</ql-button>
+<div class='privacy l-mtl'>
+<a target="_blank" class="ql-label-medium text--light" href="/privacy_policy">Privacy</a>
+<span class='ql-label-medium text--light l-mls l-mrs'>&middot;</span>
+<a class="ql-label-medium text--light" href="/terms_of_service">Terms</a>
+</div>
+</div>
+</ql-menu>
+
+</div>
+</ql-toolbar>
+
+</div>
+</div>
+
+<nav class='nav-panel js-nav-panel'>
+<div class='nav-panel__logo'>
+<div class="custom-logo">Qwiklabs</div>
+</div>
+<nav class='ql-sidenav'>
+<ql-sidenav-item href='/' icon='home' label='Home'></ql-sidenav-item>
+
+<ql-sidenav-item href='/catalog' icon='school' label='Catalog'></ql-sidenav-item>
+
+<ql-sidenav-item href='/profile' icon='event_note' label='Profile'></ql-sidenav-item>
+
+</nav>
+
+</nav>
+<div class='nav-panel__overlay js-nav-toggle'></div>
+
+<main class='js-main' id='jump-content'>
+<div class='l-main-wrapper' id='main-wrapper'>
+
+
+
+
+<ql-drawer-container class='js-lab-state' data-analytics-payload='{&quot;label&quot;:&quot;Predicting Visitor Purchases with BigQuery ML&quot;,&quot;lab_name&quot;:&quot;Predicting Visitor Purchases with BigQuery ML&quot;,&quot;classroom_name&quot;:null,&quot;deployment&quot;:&quot;googlecoursera-run&quot;}' data-credits='0.0' data-focus-id='32528812' data-lab-billing-limit='0.0' data-lab-duration='4800' data-parent='lti_session' data-recaptcha-enabled id='lab-container'>
+<ql-drawer id='terminal-drawer' slot='drawer'>
+<iframe allow='clipboard-read' class='terminal' id='embedded-resource'></iframe>
+</ql-drawer>
+<ql-drawer-content class='js-lab-wrapper' id='lab-content' slot='drawer-content'>
+<ql-drawer-container id='lab-content-container'>
+<ql-drawer id='control-panel-drawer' open slot='drawer' width='320'>
+<ql-lab-control-panel class='ql-lab-control-panel__max-height control-panel js-lab-control-panel' connectionFiles='[]' labControlButton='{&quot;disabled&quot;:false,&quot;pending&quot;:false,&quot;running&quot;:false}' labDetails='[]' labTimer='{&quot;ticking&quot;:false,&quot;secondsRemaining&quot;:4800}' studentResources='[]'>
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr"   ></script>
+        <script>
+          // Define function so that we can call it again later if we need to reset it
+          // This executes reCAPTCHA and then calls our callback.
+          function executeRecaptchaForStartLab() {
+            grecaptcha.ready(function() {
+              grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}).then(function(token) {
+                setInputWithRecaptchaResponseTokenForStartLab('g-recaptcha-response-data-start-lab', token)
+              });
+            });
+          };
+          // Invoke immediately
+          executeRecaptchaForStartLab()
+
+          // Async variant so you can await this function from another async function (no need for
+          // an explicit callback function then!)
+          // Returns a Promise that resolves with the response token.
+          async function executeRecaptchaForStartLabAsync() {
+            return new Promise((resolve, reject) => {
+             grecaptcha.ready(async function() {
+                resolve(await grecaptcha.execute('6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr', {action: 'start_lab'}))
+              });
+            })
+          };
+
+                  var setInputWithRecaptchaResponseTokenForStartLab = function(id, token) {
+          var element = document.getElementById(id);
+          if (element !== null) element.value = token;
+        }
+
+        </script>
+<input type="hidden" name="g-recaptcha-response-data[start_lab]" id="g-recaptcha-response-data-start-lab" data-sitekey="6LeVI8IUAAAAAJNdox5eTkYrw9SbvhZ1TFyv3iHr" class="g-recaptcha g-recaptcha-response "/>
+
+<div aria-live='polite' class='hidden' id='recaptcha-v2-start-lab' slot='recaptcha'>
+<script src="https://www.recaptcha.net/recaptcha/api.js" async defer ></script>
+<div data-sitekey="6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV" data-callback="recaptchaComplete" data-expired-callback="expireV2Token" class="g-recaptcha "></div>
+          <noscript>
+            <div>
+              <div style="width: 302px; height: 422px; position: relative;">
+                <div style="width: 302px; height: 422px; position: absolute;">
+                  <iframe
+                    src="https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV"
+                    name="ReCAPTCHA"
+                    style="width: 302px; height: 422px; border-style: none; border: 0; overflow: hidden;">
+                  </iframe>
+                </div>
+              </div>
+              <div style="width: 300px; height: 60px; border-style: none;
+                bottom: 12px; left: 25px; margin: 0px; padding: 0px; right: 25px;
+                background: #f9f9f9; border: 1px solid #c1c1c1; border-radius: 3px;">
+                <textarea id="g-recaptcha-response" name="g-recaptcha-response"
+                  class="g-recaptcha-response"
+                  style="width: 250px; height: 40px; border: 1px solid #c1c1c1;
+                  margin: 10px 25px; padding: 0px; resize: none;">
+                </textarea>
+              </div>
+            </div>
+          </noscript>
+
+</div>
+</ql-lab-control-panel>
+</ql-drawer>
+<ql-drawer-content id='lab-instructions' slot='drawer-content'>
+<div class='lab-content-container'>
+<div class='alert alert--fake js-alert'>
+<p class='alert__message js-alert-message' role='alert'></p>
+<ql-icon-button class='alert__close js-alert-close' icon='clear'></ql-icon-button>
+<iframe class='l-ie-iframe-fix' tabindex='-1'></iframe>
+</div>
+<div class='lab-content__renderable-instructions js-lab-content'>
+<div class='lab-preamble'>
+<h1 class='lab-preamble__title'>
+Predicting Visitor Purchases with BigQuery ML
+</h1>
+<div class='lab-preamble__details ql-title-medium'>
+<span>1 hour 20 minutes</span>
+<span>Free</span>
+<div class='lab__rating'>
+<a aria-label="Lab Reviews" href="/focuses/32528812/reviews?parent=lti_session"><div class='rateit' data-rateit-readonly='true' data-rateit-value='4.502'></div>
+
+</a><ql-button aria-label='Rate Lab' id='rate-lab-btn' label='Rate Lab' text></ql-button>
+</div>
+</div>
+</div>
+<div class='lab-outline-place-holder'></div>
+
+<div class='markdown-lab-instructions js-markdown-instructions' id='markdown-lab-instructions'>
+
+<h2 id="step1">Overview</h2>
+<p><a href="https://cloud.google.com/bigquery/docs/bigqueryml-analyst-start" target="_blank">BigQuery ML</a> (BigQuery machine learning) is a feature in BigQuery where data analysts can create, train, evaluate, and predict with machine learning models with minimal coding.</p>
+<p>The Google Analytics Sample <a href="https://www.blog.google/products/marketingplatform/analytics/introducing-google-analytics-sample" target="_blank">Ecommerce dataset</a> that has millions of Google Analytics records for the <a href="https://shop.googlemerchandisestore.com/" target="_blank">Google Merchandise Store</a> loaded into BigQuery. In this lab, you will use this data to run some typical queries that businesses would want to know about their customers' purchasing habits.</p>
+<h3>Objectives</h3>
+<p>In this lab, you learn to perform the following tasks:</p>
+<ul>
+<li>Use BigQuery to find public datasets</li>
+<li>Query and explore the ecommerce dataset</li>
+<li>Create a training and evaluation dataset to be used for batch prediction</li>
+<li>Create a classification (logistic regression) model in BigQuery ML</li>
+<li>Evaluate the performance of your machine learning model</li>
+<li>Predict and rank the probability that a visitor will make a purchase</li>
+</ul>
+<h2 id="step2">Set up your environments</h2>
+<h3>Lab setup</h3>
+<p>For each lab, you get a new Google Cloud project and set of resources for a fixed time at no cost.</p>
+<ol>
+<li>
+<p>Sign in to Qwiklabs using an <strong>incognito window</strong>.</p>
+</li>
+<li>
+<p>Note the lab's access time (for example, <code>1:15:00</code>), and make sure you can finish within that time.<br>
+There is no pause feature. You can restart if needed, but you have to start at the beginning.</p>
+</li>
+<li>
+<p>When ready, click <strong>Start lab</strong>.</p>
+</li>
+<li>
+<p>Note your lab credentials (<strong>Username</strong> and <strong>Password</strong>). You will use them to sign in to the Google Cloud Console.</p>
+</li>
+<li>
+<p>Click <strong>Open Google Console</strong>.</p>
+</li>
+<li>
+<p>Click <strong>Use another account</strong> and copy/paste credentials for <strong>this</strong> lab into the prompts.<br>
+If you use other credentials, you'll receive errors or <strong>incur charges</strong>.</p>
+</li>
+<li>
+<p>Accept the terms and skip the recovery resource page.</p>
+</li>
+</ol>
+<aside class="warning"><p><strong>Note:</strong> Do not click <strong>End Lab</strong> unless you have finished the lab or want to restart it. This clears your work and removes the project.
+  </p>
+</aside>
+
+<h3>Open BigQuery Console</h3>
+<ol>
+<li>In the Google Cloud Console, select <strong>Navigation menu</strong> &gt; <strong>BigQuery</strong>.</li>
+</ol>
+<p>The <strong>Welcome to BigQuery in the Cloud Console</strong> message box opens. This message box provides a link to the quickstart guide and lists UI updates.</p>
+<ol start="2">
+<li>Click <strong>Done</strong>.</li>
+</ol>
+
+<h3>Access the course dataset</h3>
+<p>Once BigQuery is open, open the <a href="https://console.cloud.google.com/bigquery?p=data-to-insights&amp;d=ecommerce&amp;t=web_analytics&amp;page=table" target="_blank">data-to-insights</a> project in a new browser tab to bring this project into your BigQuery projects panel.</p>
+<p>The field definitions for the <strong>data-to-insights</strong> ecommerce dataset are on the<a href="https://support.google.com/analytics/answer/3437719?hl=en" target="_blank">[UA] BigQuery Export schema page</a>. Keep the link open in a new tab for reference.</p>
+<h2 id="step3">Task 1. Explore ecommerce data</h2>
+<p><strong>Scenario:</strong> Your data analyst team exported the Google Analytics logs for an ecommerce website into BigQuery and created a new table of all the raw ecommerce visitor session data for you to explore. Using this data, you'll try to answer a few questions.</p>
+<p><strong>Question:</strong> Out of the total visitors who visited our website, what % made a purchase?</p>
+<ol>
+<li>Click the query <strong>EDITOR</strong>.</li>
+<li>Add the following to the New Query field:</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+WITH visitors AS(
+SELECT
+COUNT(DISTINCT fullVisitorId) AS total_visitors
+FROM `data-to-insights.ecommerce.web_analytics`
+),
+
+purchasers AS(
+SELECT
+COUNT(DISTINCT fullVisitorId) AS total_purchasers
+FROM `data-to-insights.ecommerce.web_analytics`
+WHERE totals.transactions IS NOT NULL
+)
+
+SELECT
+  total_visitors,
+  total_purchasers,
+  total_purchasers / total_visitors AS conversion_rate
+FROM visitors, purchasers
+</ql-code-block>
+<ol start="3">
+<li>Click <strong>Run</strong>.</li>
+</ol>
+<p>The result: 2.69%</p>
+<p><strong>Question:</strong> What are the top 5 selling products?</p>
+<ol start="4">
+<li>Add the following query in the query <strong>EDITOR</strong>, and then click <strong>Run</strong>:</li>
+</ol>
+<ql-code-block language="sql">
+SELECT
+  p.v2ProductName,
+  p.v2ProductCategory,
+  SUM(p.productQuantity) AS units_sold,
+  ROUND(SUM(p.localProductRevenue/1000000),2) AS revenue
+FROM `data-to-insights.ecommerce.web_analytics`,
+UNNEST(hits) AS h,
+UNNEST(h.product) AS p
+GROUP BY 1, 2
+ORDER BY revenue DESC
+LIMIT 5;
+</ql-code-block>
+<p>The result:</p>
+<table>
+
+<tr>
+<th>Row</th>
+<th>v2ProductName</th>
+<th>v2ProductCategory</th>
+<th>units_sold</th>
+<th>revenue</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>Nest® Learning Thermostat 3rd Gen-USA - Stainless Steel</td>
+<td>Nest-USA</td>
+<td>17651</td>
+<td>870976.95</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Nest® Cam Outdoor Security Camera - USA</td>
+<td>Nest-USA</td>
+<td>16930</td>
+<td>684034.55</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Nest® Cam Indoor Security Camera - USA</td>
+<td>Nest-USA</td>
+<td>14155</td>
+<td>548104.47</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Nest® Protect Smoke + CO White Wired Alarm-USA</td>
+<td>Nest-USA</td>
+<td>6394</td>
+<td>178937.6</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Nest® Protect Smoke + CO White Battery Alarm-USA</td>
+<td>Nest-USA</td>
+<td>6340</td>
+<td>178572.4</td>
+</tr>
+
+</table>
+<p><strong>Question:</strong> How many visitors bought on subsequent visits to the website?</p>
+<ol start="5">
+<li>Run the following query to find out:</li>
+</ol>
+<ql-code-block language="sql">
+# visitors who bought on a return visit (could have bought on first as well
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid, # 741,721 unique visitors
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+SELECT
+  COUNT(DISTINCT fullvisitorid) AS total_visitors,
+  will_buy_on_return_visit
+FROM all_visitor_stats
+GROUP BY will_buy_on_return_visit
+</ql-code-block>
+<p>The results:</p>
+<table>
+
+<tr>
+<th>Row</th>
+<th>total_visitors</th>
+<th>will_buy_on_return_visit</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>729848</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>11873</td>
+<td>1</td>
+</tr>
+
+</table>
+<p>Analyzing the results, you can see that (11873 / 729848) = 1.6% of total visitors will return and purchase from the website. This includes the subset of visitors who bought on their very first session and then came back and bought again.</p>
+<p><ql-multiple-select-probe answerindices="[0, 1, 2]" optiontitles='[
+"The customer wants to comparison shop on other sites before making a purchase decision.",
+"The customer is waiting for products to go on sale or other promotion",
+"The customer is doing additional research"
+]' stem="What are some of the reasons a typical ecommerce customer will browse but not buy until a later visit? Choose all that could apply.">
+</ql-multiple-select-probe></p>
+<p>This behavior is very common for luxury goods where significant up-front research and comparison is required by the customer before deciding (think car purchases) but also true to a lesser extent for the merchandise on this site (t-shirts, accessories, etc).</p>
+<p>In the world of online marketing, identifying and marketing to these future customers based on the characteristics of their first visit will increase conversion rates and reduce the outflow to competitor sites.</p>
+<h2 id="step4">Task 2. Select features and create your training dataset</h2>
+<p>Now you will create a Machine Learning model in BigQuery to predict whether or not a new user is likely to purchase in the future. Identifying these high-value users can help  your marketing team target them with special promotions and ad campaigns.</p>
+<p>Google Analytics captures a wide variety of dimensions and measures about a user's visit on this ecommerce website. Browse the complete list of fields in the   <a href="https://support.google.com/analytics/answer/3437719?hl=en" target="_blank">[UA] BigQuery Export schema Guide</a> and then <a href="https://bigquery.cloud.google.com/table/data-to-insights:ecommerce.web_analytics?tab=preview" target="_blank">preview the demo dataset</a> to find useful features that will help a machine learning model understand the relationship between data about a visitor's first time on your website and whether they will return and make a purchase.</p>
+<p>Your team decides to test whether these two fields are good inputs for your classification model:</p>
+<ul>
+<li>
+<code>totals.bounces</code> (whether the visitor left the website immediately)</li>
+<li>
+<code>totals.timeOnSite</code> (how long the visitor was on our website)</li>
+</ul>
+<p><ql-multiple-choice-probe answerindex="2" optiontitles='[
+"Whether a user bounces is highly correlated with their time on site (e.g. 0 seconds) ",
+"Only using time spent on the site ignores other potential useful columns (features)",
+"Both of the above"                      
+]' stem="What are the risks of only using the above two fields?">
+</ql-multiple-choice-probe></p>
+<p>Machine learning is only as good as the training data that is fed into it. If there isn't enough information for the model to determine and learn the relationship between your input features and your label (in this case, whether the visitor bought in the future) then you will not have an accurate model. While training a model on just these two fields is a start, you will see if they're good enough to produce an accurate model.</p>
+<ul>
+<li>In the query <strong>EDITOR</strong>, add the following query and then click <strong>Run</strong>:</li>
+</ul>
+<ql-code-block language="sql">
+SELECT
+  * EXCEPT(fullVisitorId)
+FROM
+
+  # features
+  (SELECT
+    fullVisitorId,
+    IFNULL(totals.bounces, 0) AS bounces,
+    IFNULL(totals.timeOnSite, 0) AS time_on_site
+  FROM
+    `data-to-insights.ecommerce.web_analytics`
+  WHERE
+    totals.newVisits = 1)
+  JOIN
+  (SELECT
+    fullvisitorid,
+    IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM
+      `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid)
+  USING (fullVisitorId)
+ORDER BY time_on_site DESC
+LIMIT 10;
+</ql-code-block>
+<p>Results:</p>
+<table>
+
+<tr>
+<th>Row</th>
+<th>bounces</th>
+<th>time_on_site</th>
+<th>will_buy_on_return_visit</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>0</td>
+<td>15047</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>12136</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0</td>
+<td>11201</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>10046</td>
+<td>0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>9974</td>
+<td>0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0</td>
+<td>9564</td>
+<td>0</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>9520</td>
+<td>0</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>9275</td>
+<td>1</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0</td>
+<td>9138</td>
+<td>0</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0</td>
+<td>8872</td>
+<td>0</td>
+</tr>
+
+</table>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"The features are bounces and time_on_site. The label is will_buy_on_return_visit",
+"The feature is will_buy_on_return_visit. The labels are bounces and time_on_site",
+"The features are bounces and will_buy_on_return_visit. The label is time_on_site"                      
+]' shuffle="" stem="Which fields are the model features? What is the label (correct answer)?">
+</ql-multiple-choice-probe></p>
+<p><ql-multiple-select-probe answerindices="[0, 1, 2]" optiontitles='[
+"bounces",
+"time_on_site",
+"visitId",
+"will_buy_on_return_visit"
+]' shuffle="" stem="Which fields are known after a visitor's first session? (Check all that apply)">
+</ql-multiple-select-probe></p>
+<p><ql-multiple-select-probe answerindices="[3]" optiontitles='[
+"bounces",
+"time_on_site",
+"visitId",
+"will_buy_on_return_visit"
+]' shuffle="" stem="Which field isn't known until later in the future after their first session?">
+</ql-multiple-select-probe></p>
+<p><strong>Discussion:</strong> <strong>will_buy_on_return_visit</strong> is not known after the first visit. Again, you're predicting for a subset of users who returned to your website and purchased. Since you don't know the future at prediction time, you cannot say with certainty whether a new visitor comes back and purchases. The value of building a ML model is to get the probability of future purchase based on the data gleaned about their first session.</p>
+<p><strong>Question:</strong> Looking at the initial data results, do you think <strong>time_on_site</strong> and <strong>bounces</strong> will be a good indicator of whether the user will return and purchase or not?</p>
+<p><strong>Answer:</strong> It's often too early to tell before training and evaluating the model, but at first glance out of the top 10 <code>time_on_site</code>, only 1 customer returned to buy, which isn't very promising. Let's see how well the model does.</p>
+<h2 id="step5">Task 3. Create a BigQuery dataset to store models</h2>
+<p>Next, create a new BigQuery dataset which will also store your ML models.</p>
+<ol>
+<li>In the left pane, click on your project name, and then click on the <code>View action</code> icon (three dots) and select <strong>Create Dataset</strong>.</li>
+</ol>
+<p><img alt="Create Dataset option" src="https://cdn.qwiklabs.com/REH1MFCFyVrzZb54TvWijJ46wBhb9%2B7c%2FBox5JR8MMo%3D"></p>
+<ol start="2">
+<li>In the <strong>Create Dataset</strong> dialog:</li>
+</ol>
+<ul>
+<li>For <strong>Dataset ID</strong>, type <strong>ecommerce</strong>.</li>
+<li>Leave the other values at their defaults.</li>
+</ul>
+<ol start="3">
+<li>Click <strong>Create dataset</strong>.</li>
+</ol>
+
+<h2 id="step6">Task 4. Select a BigQuery ML model type and specify options</h2>
+<p>Now that you have your initial features selected, you are now ready to create your first ML model in BigQuery.</p>
+<p>There are the two model types to choose from:</p>
+<table>
+
+<tr>
+<th>Model</th>
+<th>Model Type</th>
+<th>Label Data type</th>
+<th>Example</th>
+</tr>
+
+
+<tr>
+<td>Forecasting</td>
+<td>linear_reg</td>
+<td>Numeric value (typically an integer or floating point)</td>
+<td>Forecast sales figures for next year given historical sales data.</td>
+</tr>
+<tr>
+<td>Classification</td>
+<td>logistic_reg</td>
+<td>0 or 1 for binary classification</td>
+<td>Classify an email as spam or not spam given the context.</td>
+</tr>
+
+</table>
+<ql-infobox><strong>Note: </strong>There are many additional model types used in Machine Learning (like Neural Networks and decision trees) and available using libraries like <a href="https://www.tensorflow.org/tutorials/" target="_blank">TensorFlow</a>. At the time of writing, BigQuery ML supports the two listed above.</ql-infobox>
+<p><ql-multiple-choice-probe answerindex="0" optiontitles='[
+"Classification model (like logistic_reg etc.)",
+"Forecasting model (like linear_reg etc.)",
+"Recommendation model (like matrix_factorization etc.)"                      
+]' shuffle="" stem="Which model type should you choose that will buy or won't buy?">
+</ql-multiple-choice-probe></p>
+<ol>
+<li>Enter the following query to create a model and specify model options:</li>
+</ol>
+<ql-code-block language="sql">
+CREATE OR REPLACE MODEL `ecommerce.classification_model`
+OPTIONS
+(
+model_type='logistic_reg',
+labels = ['will_buy_on_return_visit']
+)
+AS
+
+#standardSQL
+SELECT
+  * EXCEPT(fullVisitorId)
+FROM
+
+  # features
+  (SELECT
+    fullVisitorId,
+    IFNULL(totals.bounces, 0) AS bounces,
+    IFNULL(totals.timeOnSite, 0) AS time_on_site
+  FROM
+    `data-to-insights.ecommerce.web_analytics`
+  WHERE
+    totals.newVisits = 1
+    AND date BETWEEN '20160801' AND '20170430') # train on first 9 months
+  JOIN
+  (SELECT
+    fullvisitorid,
+    IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM
+      `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid)
+  USING (fullVisitorId)
+;
+</ql-code-block>
+<ol start="2">
+<li>Next, click <strong>Run</strong> to train your model.</li>
+</ol>
+<p>Wait for the model to train (5 - 10 minutes).</p>
+<ql-infobox><strong>Note:</strong> You cannot feed all of your available data to the model during training since you need to save some unseen data points for model evaluation and testing. To accomplish this, add a WHERE clause condition is being used to filter and train on only the first 9 months of session data in your 12 month dataset.</ql-infobox>
+<p>After your model is trained, you will see the message "This statement created a new model named qwiklabs-gcp-xxxxxxxxx:ecommerce.classification_model".</p>
+<ol start="3">
+<li>Click <strong>Go to model</strong>.</li>
+</ol>
+<p>Look inside the ecommerce dataset and confirm <strong>classification_model</strong> now appears.</p>
+<p>Next, you will evaluate the performance of the model against new unseen evaluation data.</p>
+<h2 id="step7">Task 5. Evaluate classification model performance</h2>
+<h3>Select your performance criteria</h3>
+<p>For classification problems in ML, you want to minimize the False Positive Rate (predict that the user will return and purchase and they don't) and maximize the True Positive Rate (predict that the user will return and purchase and they do).</p>
+<p>This relationship is visualized with a ROC (Receiver Operating Characteristic) curve like the one shown here, where you try to maximize the area under the curve or AUC:</p>
+<p><img alt="Comparing ROC Curves diagram" src="https://cdn.qwiklabs.com/GNW5Bw%2B8bviep9OK201QGPzaAEnKKyoIkDChUHeVdFw%3D"></p>
+<p>In BigQuery ML, <strong>roc_auc</strong> is simply a queryable field when evaluating your trained ML model.</p>
+<ul>
+<li>Now that training is complete, you can evaluate how well the model performs by running this query using <code>ML.EVALUATE</code>:</li>
+</ul>
+<ql-code-block language="sql">
+SELECT
+  roc_auc,
+  CASE
+    WHEN roc_auc &gt; .9 THEN 'good'
+    WHEN roc_auc &gt; .8 THEN 'fair'
+    WHEN roc_auc &gt; .7 THEN 'not great'
+  ELSE 'poor' END AS model_quality
+FROM
+  ML.EVALUATE(MODEL ecommerce.classification_model,  (
+
+SELECT
+  * EXCEPT(fullVisitorId)
+FROM
+
+  # features
+  (SELECT
+    fullVisitorId,
+    IFNULL(totals.bounces, 0) AS bounces,
+    IFNULL(totals.timeOnSite, 0) AS time_on_site
+  FROM
+    `data-to-insights.ecommerce.web_analytics`
+  WHERE
+    totals.newVisits = 1
+    AND date BETWEEN '20170501' AND '20170630') # eval on 2 months
+  JOIN
+  (SELECT
+    fullvisitorid,
+    IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM
+      `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid)
+  USING (fullVisitorId)
+
+));
+</ql-code-block>
+<p>You should see the following result:</p>
+<table>
+
+<tr>
+<th>Row</th>
+<th>roc_auc</th>
+<th>model_quality</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>0.724588</td>
+<td>not great</td>
+</tr>
+
+</table>
+<p>After evaluating your model you get a <strong>roc_auc</strong> of 0.72, which shows that the model has not great predictive power. Since the goal is to get the area under the curve as close to 1.0 as possible, there is room for improvement.</p>
+
+<h2 id="step8">Task 6. Improve model performance with feature engineering</h2>
+<p>As was hinted at earlier, there are many more features in the dataset that may help the model better understand the relationship between a visitor's first session and the likelihood that they will purchase on a subsequent visit.</p>
+<p>Add some new features and create a second machine learning model called <code>classification_model_2</code>:</p>
+<ul>
+<li>How far the visitor got in the checkout process on their first visit</li>
+<li>Where the visitor came from (traffic source: organic search, referring site etc.)</li>
+<li>Device category (mobile, tablet, desktop)</li>
+<li>Geographic information (country)</li>
+</ul>
+<ol>
+<li>Create this second model by running the below query:</li>
+</ol>
+<ql-code-block language="sql">
+CREATE OR REPLACE MODEL `ecommerce.classification_model_2`
+OPTIONS
+  (model_type='logistic_reg', labels = ['will_buy_on_return_visit']) AS
+
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid,
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+# add in new features
+SELECT * EXCEPT(unique_session_id) FROM (
+
+  SELECT
+      CONCAT(fullvisitorid, CAST(visitId AS STRING)) AS unique_session_id,
+
+      # labels
+      will_buy_on_return_visit,
+
+      MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+      # behavior on the site
+      IFNULL(totals.bounces, 0) AS bounces,
+      IFNULL(totals.timeOnSite, 0) AS time_on_site,
+      totals.pageviews,
+
+      # where the visitor came from
+      trafficSource.source,
+      trafficSource.medium,
+      channelGrouping,
+
+      # mobile or desktop
+      device.deviceCategory,
+
+      # geographic
+      IFNULL(geoNetwork.country, "") AS country
+
+  FROM `data-to-insights.ecommerce.web_analytics`,
+     UNNEST(hits) AS h
+
+    JOIN all_visitor_stats USING(fullvisitorid)
+
+  WHERE 1=1
+    # only predict for new visits
+    AND totals.newVisits = 1
+    AND date BETWEEN '20160801' AND '20170430' # train 9 months
+
+  GROUP BY
+  unique_session_id,
+  will_buy_on_return_visit,
+  bounces,
+  time_on_site,
+  totals.pageviews,
+  trafficSource.source,
+  trafficSource.medium,
+  channelGrouping,
+  device.deviceCategory,
+  country
+);
+</ql-code-block>
+<ql-infobox>
+<strong>Note:</strong> You are still training on the same first 9 months of data, even with this new model. It's important to have the same training dataset so you can be certain a better model output is attributable to better input features and not new or different training data.
+</ql-infobox>
+<p>A key new feature that was added to the training dataset query is the maximum checkout progress each visitor reached in their session, which is recorded in the field <code>hits.eCommerceAction.action_type</code>. If you search for that field in the <a href="https://support.google.com/analytics/answer/3437719?hl=en" target="_blank">field definitions</a> you will see the field mapping of 6 = Completed Purchase.</p>
+<p>As an aside, the web analytics dataset has nested and repeated fields like <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/arrays" target="_blank">ARRAYS</a> which need to be broken apart into separate rows in your dataset. This is accomplished by using the UNNEST() function, which you can see in the above query.</p>
+<p>Wait for the new model to finish training (5-10 minutes).</p>
+
+<ol start="2">
+<li>Evaluate this new model to see if there is better predictive power by running the below query:</li>
+</ol>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  roc_auc,
+  CASE
+    WHEN roc_auc &gt; .9 THEN 'good'
+    WHEN roc_auc &gt; .8 THEN 'fair'
+    WHEN roc_auc &gt; .7 THEN 'not great'
+  ELSE 'poor' END AS model_quality
+FROM
+  ML.EVALUATE(MODEL ecommerce.classification_model_2,  (
+
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid,
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+# add in new features
+SELECT * EXCEPT(unique_session_id) FROM (
+
+  SELECT
+      CONCAT(fullvisitorid, CAST(visitId AS STRING)) AS unique_session_id,
+
+      # labels
+      will_buy_on_return_visit,
+
+      MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+      # behavior on the site
+      IFNULL(totals.bounces, 0) AS bounces,
+      IFNULL(totals.timeOnSite, 0) AS time_on_site,
+      totals.pageviews,
+
+      # where the visitor came from
+      trafficSource.source,
+      trafficSource.medium,
+      channelGrouping,
+
+      # mobile or desktop
+      device.deviceCategory,
+
+      # geographic
+      IFNULL(geoNetwork.country, "") AS country
+
+  FROM `data-to-insights.ecommerce.web_analytics`,
+     UNNEST(hits) AS h
+
+    JOIN all_visitor_stats USING(fullvisitorid)
+
+  WHERE 1=1
+    # only predict for new visits
+    AND totals.newVisits = 1
+    AND date BETWEEN '20170501' AND '20170630' # eval 2 months
+
+  GROUP BY
+  unique_session_id,
+  will_buy_on_return_visit,
+  bounces,
+  time_on_site,
+  totals.pageviews,
+  trafficSource.source,
+  trafficSource.medium,
+  channelGrouping,
+  device.deviceCategory,
+  country
+)
+));
+</ql-code-block>
+<p>(Output)</p>
+<table>
+
+<tr>
+<th>Row</th>
+<th>roc_auc</th>
+<th>model_quality</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td>0.910382</td>
+<td>good</td>
+</tr>
+
+</table>
+<p>With this new model you now get a <strong>roc_auc</strong> of 0.91 which is significantly better than the first model.</p>
+<p>Now that you have a trained model, time to make some predictions.</p>
+
+<h2 id="step9">Task 7. Predict which new visitors will come back and purchase</h2>
+<p>Next you will write a query to predict which new visitors will come back and make a purchase.</p>
+<ul>
+<li>Run the prediction query below which uses the improved classification model to predict the probability that a first-time visitor to the Google Merchandise Store will make a purchase in a later visit:</li>
+</ul>
+<ql-code-block language="sql">
+SELECT
+*
+FROM
+  ml.PREDICT(MODEL `ecommerce.classification_model_2`,
+   (
+
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid,
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+  SELECT
+      CONCAT(fullvisitorid, '-',CAST(visitId AS STRING)) AS unique_session_id,
+
+      # labels
+      will_buy_on_return_visit,
+
+      MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+      # behavior on the site
+      IFNULL(totals.bounces, 0) AS bounces,
+      IFNULL(totals.timeOnSite, 0) AS time_on_site,
+      totals.pageviews,
+
+      # where the visitor came from
+      trafficSource.source,
+      trafficSource.medium,
+      channelGrouping,
+
+      # mobile or desktop
+      device.deviceCategory,
+
+      # geographic
+      IFNULL(geoNetwork.country, "") AS country
+
+  FROM `data-to-insights.ecommerce.web_analytics`,
+     UNNEST(hits) AS h
+
+    JOIN all_visitor_stats USING(fullvisitorid)
+
+  WHERE
+    # only predict for new visits
+    totals.newVisits = 1
+    AND date BETWEEN '20170701' AND '20170801' # test 1 month
+
+  GROUP BY
+  unique_session_id,
+  will_buy_on_return_visit,
+  bounces,
+  time_on_site,
+  totals.pageviews,
+  trafficSource.source,
+  trafficSource.medium,
+  channelGrouping,
+  device.deviceCategory,
+  country
+)
+
+)
+
+ORDER BY
+  predicted_will_buy_on_return_visit DESC;
+</ql-code-block>
+<p>The predictions are made in the last 1 month (out of 12 months) of the dataset.</p>
+
+<p>Your model will now output the predictions it has for those July 2017 ecommerce sessions. You can see three newly added fields:</p>
+<ul>
+<li>predicted_will_buy_on_return_visit: whether the model thinks the visitor will buy later (1 = yes)</li>
+<li>predicted_will_buy_on_return_visit_probs.label: the binary classifier for yes / no</li>
+<li>predicted_will_buy_on_return_visit_probs.prob: the confidence the model has in it's prediction (1 = 100%)</li>
+</ul>
+<h2 id="step10">Results</h2>
+<ul>
+<li>Of the top 6% of first-time visitors (sorted in decreasing order of predicted probability), more than 6% make a purchase in a later visit.</li>
+<li>These users represent nearly 50% of all first-time visitors who make a purchase in a later visit.</li>
+<li>Overall, only 0.7% of first-time visitors make a purchase in a later visit.</li>
+<li>Targeting the top 6% of first-time increases marketing ROI by 9x vs targeting them all!</li>
+</ul>
+<h3>Additional information</h3>
+<p><strong>roc_auc</strong> is just one of the performance metrics available during model evaluation. Also available are <a href="https://en.wikipedia.org/wiki/Precision_and_recall" target="_blank">accuracy, precision, and recall</a>. Knowing which performance metric to rely on is highly dependent on what your overall objective or goal is.</p>
+<h3>Congratulations!</h3>
+<p>You created a machine learning model using just SQL.</p>
+<h2 id="step11">Challenge</h2>
+<h3>Summary</h3>
+<p>In the previous two tasks you saw the power of feature engineering at work in improving our models performance. However, we still may be able to improve our performance by exploring other model types.  For classification problems, BigQuery ML also supports the following model types:</p>
+<ul>
+<li>
+<a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-dnn-models" target="_blank">Deep Neural Networks</a>.</li>
+<li>
+<a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-boosted-tree" target="_blank">Boosted Decision Trees (XGBoost)</a>.</li>
+<li>
+<a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-automl" target="_blank">AutoML Tables Models</a>.</li>
+<li>
+<a href="https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-tensorflow" target="_blank">Importing Custom TensorFlow Models</a>.</li>
+</ul>
+<h3>Task</h3>
+<p>Though our linear classification (logistic regression) model performed well after feature engineering, it may be too simple of a model to fully capture the relationship between the features and the label. Using the same dataset and labels as you did in Task 6 to create the model ecommerce.classification_model_2, your challenge is to create a XGBoost Classifier.</p>
+<ql-infobox><strong>Note: </strong>
+<strong>Hint :</strong> Use following options for Boosted_Tree_Classifier:
+<div>1. L2_reg = 0.1</div>
+<div>2. num_parallel_tree = 8</div>
+<div>3. max_tree_depth = 10</div>
+</ql-infobox>
+<p>You may need to look at the documentation linked above to see the exact syntax. The model will take around 7 minutes to train. The solution can be found in the solution section below if you need help writing the query.
+pa</p>
+<h3>Solution:</h3>
+<p>This is the solution that you require in order to create a XGBoost Classifier:</p>
+<ql-code-block language="sql">
+CREATE OR REPLACE MODEL `ecommerce.classification_model_3`
+        OPTIONS
+          (model_type='BOOSTED_TREE_CLASSIFIER' , l2_reg = 0.1, num_parallel_tree = 8, max_tree_depth = 10,
+              labels = ['will_buy_on_return_visit']) AS
+
+        WITH all_visitor_stats AS (
+        SELECT
+          fullvisitorid,
+          IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+          FROM `data-to-insights.ecommerce.web_analytics`
+          GROUP BY fullvisitorid
+        )
+
+        # add in new features
+        SELECT * EXCEPT(unique_session_id) FROM (
+
+          SELECT
+              CONCAT(fullvisitorid, CAST(visitId AS STRING)) AS unique_session_id,
+
+              # labels
+              will_buy_on_return_visit,
+
+              MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+              # behavior on the site
+              IFNULL(totals.bounces, 0) AS bounces,
+              IFNULL(totals.timeOnSite, 0) AS time_on_site,
+              totals.pageviews,
+
+              # where the visitor came from
+              trafficSource.source,
+              trafficSource.medium,
+              channelGrouping,
+
+              # mobile or desktop
+              device.deviceCategory,
+
+              # geographic
+              IFNULL(geoNetwork.country, "") AS country
+
+          FROM `data-to-insights.ecommerce.web_analytics`,
+             UNNEST(hits) AS h
+
+            JOIN all_visitor_stats USING(fullvisitorid)
+
+          WHERE 1=1
+            # only predict for new visits
+            AND totals.newVisits = 1
+            AND date BETWEEN '20160801' AND '20170430' # train 9 months
+
+          GROUP BY
+          unique_session_id,
+          will_buy_on_return_visit,
+          bounces,
+          time_on_site,
+          totals.pageviews,
+          trafficSource.source,
+          trafficSource.medium,
+          channelGrouping,
+          device.deviceCategory,
+          country
+        );
+</ql-code-block>
+<p>Let us now evaluate our model and see how we did:</p>
+<ql-code-block language="sql">
+#standardSQL
+SELECT
+  roc_auc,
+  CASE
+    WHEN roc_auc &gt; .9 THEN 'good'
+    WHEN roc_auc &gt; .8 THEN 'fair'
+    WHEN roc_auc &gt; .7 THEN 'not great'
+  ELSE 'poor' END AS model_quality
+FROM
+  ML.EVALUATE(MODEL ecommerce.classification_model_3,  (
+
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid,
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+# add in new features
+SELECT * EXCEPT(unique_session_id) FROM (
+
+  SELECT
+      CONCAT(fullvisitorid, CAST(visitId AS STRING)) AS unique_session_id,
+
+      # labels
+      will_buy_on_return_visit,
+
+      MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+      # behavior on the site
+      IFNULL(totals.bounces, 0) AS bounces,
+      IFNULL(totals.timeOnSite, 0) AS time_on_site,
+      totals.pageviews,
+
+      # where the visitor came from
+      trafficSource.source,
+      trafficSource.medium,
+      channelGrouping,
+
+      # mobile or desktop
+      device.deviceCategory,
+
+      # geographic
+      IFNULL(geoNetwork.country, "") AS country
+
+  FROM `data-to-insights.ecommerce.web_analytics`,
+     UNNEST(hits) AS h
+
+    JOIN all_visitor_stats USING(fullvisitorid)
+
+  WHERE 1=1
+    # only predict for new visits
+    AND totals.newVisits = 1
+    AND date BETWEEN '20170501' AND '20170630' # eval 2 months
+
+  GROUP BY
+  unique_session_id,
+  will_buy_on_return_visit,
+  bounces,
+  time_on_site,
+  totals.pageviews,
+  trafficSource.source,
+  trafficSource.medium,
+  channelGrouping,
+  device.deviceCategory,
+  country
+)
+));
+</ql-code-block>
+<p>Our roc_auc has increased by about .02 to around .94!</p>
+<ql-infobox>
+<strong>Note :</strong> Your exact values will differ due to the randomness involved in the training process.
+</ql-infobox>
+<p>It’s a small change in the roc_auc, but note that since 1 is a perfect roc_auc, it gets more difficult to improve the metric the closer to 1 it gets.</p>
+<p>This is a great example of how easy it is in BigQuery ML to try out different model types with different options to see how they perform. We were able to use a much more complex model type by only changing one line of SQL.</p>
+<p>One may reasonably ask “Where did the choices for these options come from?”, and the answer is experimentation! When you are trying to find the best model type for your problems, then one has to experiment with different sets of options in a process known as hyperparameter tuning.</p>
+<p>Let’s finish up by generating predictions with our improved model and see how they compare to those we generated before. By using a <strong>Boosted tree classifier model</strong>, you can observe a slight improvement of 0.2 in our ROC AUC compared to the previous model. The query below will predict which new visitors will come back and make a purchase:</p>
+<ql-code-block language="sql">
+SELECT
+*
+FROM
+  ml.PREDICT(MODEL `ecommerce.classification_model_3`,
+   (
+
+WITH all_visitor_stats AS (
+SELECT
+  fullvisitorid,
+  IF(COUNTIF(totals.transactions &gt; 0 AND totals.newVisits IS NULL) &gt; 0, 1, 0) AS will_buy_on_return_visit
+  FROM `data-to-insights.ecommerce.web_analytics`
+  GROUP BY fullvisitorid
+)
+
+  SELECT
+      CONCAT(fullvisitorid, '-',CAST(visitId AS STRING)) AS unique_session_id,
+
+      # labels
+      will_buy_on_return_visit,
+
+      MAX(CAST(h.eCommerceAction.action_type AS INT64)) AS latest_ecommerce_progress,
+
+      # behavior on the site
+      IFNULL(totals.bounces, 0) AS bounces,
+      IFNULL(totals.timeOnSite, 0) AS time_on_site,
+      totals.pageviews,
+
+      # where the visitor came from
+      trafficSource.source,
+      trafficSource.medium,
+      channelGrouping,
+
+      # mobile or desktop
+      device.deviceCategory,
+
+      # geographic
+      IFNULL(geoNetwork.country, "") AS country
+
+  FROM `data-to-insights.ecommerce.web_analytics`,
+     UNNEST(hits) AS h
+
+    JOIN all_visitor_stats USING(fullvisitorid)
+
+  WHERE
+    # only predict for new visits
+    totals.newVisits = 1
+    AND date BETWEEN '20170701' AND '20170801' # test 1 month
+
+  GROUP BY
+  unique_session_id,
+  will_buy_on_return_visit,
+  bounces,
+  time_on_site,
+  totals.pageviews,
+  trafficSource.source,
+  trafficSource.medium,
+  channelGrouping,
+  device.deviceCategory,
+  country
+)
+
+)
+
+ORDER BY
+  predicted_will_buy_on_return_visit DESC;
+</ql-code-block>
+<p>The output now shows a classification model that can better predict the probability that a first-time visitor to the Google Merchandise Store will make a purchase in a later visit.
+By comparing the result above with the previous model shown in Task 7, you can see the confidence the model has in its predictions is more accurate when compared to the logistic_regression model type.</p>
+<h2 id="step12">End your lab</h2>
+<p>When you have completed your lab, click <strong>End Lab</strong>. Google Cloud Skills Boost removes the resources you’ve used and cleans the account for you.</p>
+<p>You will be given an opportunity to rate the lab experience. Select the applicable number of stars, type a comment, and then click <strong>Submit</strong>.</p>
+<p>The number of stars indicates the following:</p>
+<ul>
+<li>1 star = Very dissatisfied</li>
+<li>2 stars = Dissatisfied</li>
+<li>3 stars = Neutral</li>
+<li>4 stars = Satisfied</li>
+<li>5 stars = Very satisfied</li>
+</ul>
+<p>You can close the dialog box if you don't want to provide feedback.</p>
+<p>For feedback, suggestions, or corrections, please use the <strong>Support</strong> tab.</p>
+
+<p>Copyright 2022 Google LLC All rights reserved. Google and the Google logo are trademarks of Google LLC. All other company and product names may be trademarks of the respective companies with which they are associated.</p>
+
+
+
+
+
+</div>
+</div>
+
+
+<div class='lab-content__end-lab-button js-end-lab-button-container hidden'>
+<ql-lab-control-button class='js-end-lab-button' running></ql-lab-control-button>
+</div>
+<!-- / TODO: Move recommendations into the end lab modal -->
+</div>
+<div aria-label='Lab Table of Contents' class='outline-container' id='js-outline-container' role='navigation'>
+<ul class='lab-content__outline js-lab-content-outline'>
+<li><a href="#step1">Overview</a></li><li><a href="#step2">Set up your environments</a></li><li><a href="#step3">Task 1. Explore ecommerce data</a></li><li><a href="#step4">Task 2. Select features and create your training dataset</a></li><li><a href="#step5">Task 3. Create a BigQuery dataset to store models</a></li><li><a href="#step6">Task 4. Select a BigQuery ML model type and specify options</a></li><li><a href="#step7">Task 5. Evaluate classification model performance</a></li><li><a href="#step8">Task 6. Improve model performance with feature engineering</a></li><li><a href="#step9">Task 7. Predict which new visitors will come back and purchase</a></li><li><a href="#step10">Results</a></li><li><a href="#step11">Challenge</a></li><li><a href="#step12">End your lab</a></li>
+</ul>
+</div>
+</ql-drawer-content>
+</ql-drawer-container>
+</ql-drawer-content>
+</ql-drawer-container>
+<ql-snackbar id='alert-snackbar'></ql-snackbar>
+
+
+
+</div>
+</main>
+
+<span class='hidden' id='flash-sibling-before'></span>
+<ql-snackbar></ql-snackbar>
+
+<script data-glue-cookie-notification-bar-category='2B' src='https://www.gstatic.com/glue/cookienotificationbar/cookienotificationbar.min.js'></script>
+
+<ql-dialog headline='Score Details' icon='task_alt' id='jupyter-feedback-modal'>
+<iframe id='jupyter-feedback-frame' srcdoc='' title='Jupyter Feedback'></iframe>
+</ql-dialog>
+
+<div class='modal fade' id='lab-details-modal'>
+<div class='modal-container'>
+<div class='modal-content mdl-shadow--24dp'>
+<div class='modal-body'>
+<p class='l-mbm'>
+Want to build ML models with just SQL? Learn how with BigQuery ML on this Google Analytics ecommerce dataset
+</p>
+<p class='small-label l-mbs'>
+<strong>
+Duration:
+</strong>
+0m setup
+&middot;
+80m access
+&middot;
+70m completion
+</p>
+<p class='small-label l-mbs'>
+<strong>AWS Region:</strong>
+[] <strong></strong>
+</p>
+<p class='small-label l-mbs'>
+<span><strong>Levels: </strong>introductory</span>
+</p>
+<p class='small-label'>
+<strong>
+Permalink:
+</strong>
+<a href="https://googlecoursera.qwiklabs.com/catalog_lab/1795">https://googlecoursera.qwiklabs.com/catalog_lab/1795</a>
+</p>
+</div>
+<div class='modal-actions'>
+<a class='button button--text' data-dismiss='modal'>
+Got It
+</a>
+</div>
+
+
+</div>
+</div>
+<iframe class='l-ie-iframe-fix' tabindex='-1' title='modal'></iframe>
+</div>
+<ql-dialog headline='How satisfied are you with this lab?&lt;span aria-hidden=&quot;true&quot;&gt;*&lt;/span&gt;' id='lab-review-dialog'>
+<form class="simple_form js-lab-review-form" id="edit_lab_review_35073529" action="/lab_reviews/35073529" accept-charset="UTF-8" data-remote="true" method="post"><input name="utf8" type="hidden" value="&#x2713;" autocomplete="off" /><input type="hidden" name="_method" value="patch" autocomplete="off" /><div aria-labelledby='lab-review-dialog' aria-required='true' aria-valuemax='5' aria-valuemin='0' aria-valuenow='5' class='rateit js-rateit' data-rateit-max='5' data-rateit-min='0' data-rateit-resetable='false' data-rateit-step='1' data-rateit-value='5' id='lab-review-rateit' role='slider' tabindex='0'></div>
+<div class='l-mtm'>
+
+<div class="control-group hidden lab_review_user_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="12197799" name="lab_review[user_id]" id="lab_review_user_id" /></div></div>
+<div class="control-group hidden lab_review_classroom_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[classroom_id]" id="lab_review_classroom_id" /></div></div>
+<div class="control-group hidden lab_review_lab_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" value="1795" name="lab_review[lab_id]" id="lab_review_lab_id" /></div></div>
+<div class="control-group hidden lab_review_focus_id"><div class="controls"><input class="hidden" autocomplete="off" type="hidden" name="lab_review[focus_id]" id="lab_review_focus_id" /></div></div>
+<div class="control-group hidden lab_review_rating"><div class="controls"><input class="hidden js-rating-input" autocomplete="off" type="hidden" value="2" name="lab_review[rating]" id="lab_review_rating" /></div></div>
+<div class="control-group text optional lab_review_comment"><label class="text optional control-label" for="lab_review_comment">Additional Comments</label><div class="controls"><textarea class="text optional" name="lab_review[comment]" id="lab_review_comment">
+</textarea></div></div>
+</div>
+</form><ql-button disabled id='submit' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+<ql-dialog headline='All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?' icon='error_outline' id='js-lab-are-you-sure-dialog'>
+<ql-button id='js-are-you-sure-button' label='Submit' slot='action' text></ql-button>
+</ql-dialog>
+
+
+<script>
+  $(function() {
+    ql.initMaterialInputs();
+    initChosen();
+    initSearch();
+    initTabs();
+    ql.list.init();
+    ql.favoriting.init();
+    ql.header.myAccount.init();
+    initTooltips();
+    ql.autocomplete.init();
+    ql.modals.init();
+    ql.toggleButtons.init();
+    ql.analytics.init();
+    ql.chat.init();
+  ql.jumpContent.init();
+  ql.labControlPanel.addRecaptchaErrorHandler();
+  initLabContent();
+  ql.labOutline.links.init();
+  initLabReviewModal();
+  initLabReviewTranslations( {"star_amount_1":"1 of 5 stars","star_amount_2":"2 of 5 stars","star_amount_3":"3 of 5 stars","star_amount_4":"4 of 5 stars","star_amount_5":"5 of 5 stars"} )
+  ql.labAssessment.init();
+  ql.labData.init();
+  initLabTranslations( {"are_you_sure":"All done? If you end this lab, you will lose all your work. You may not be able to restart the lab if there is a quota limit. Are you sure you want to end this lab?","in_progress":"*In Progress*","ending":"*Ending*","starting":"*Starting, please wait*","end_concurrent_labs":"Sorry, you can only run one lab at a time. To start this lab, please confirm that you want all of your existing labs to end.","copied":"Copied","no_resource":"Error retrieving resource.","no_support":"No Support","mac_press":"Press ⌘-C to copy","thanks_review":"Thanks for reviewing this lab.","windows_press":"Press Ctrl-C to copy","days":"days"} );
+  ql.labRun.init();
+  ql.navPanel.init();
+  ql.navigation.init();
+  
+  });
+</script>
+
+</body>
+</html>
+
